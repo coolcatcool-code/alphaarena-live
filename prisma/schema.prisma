@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model AIModel {
+  id          String        @id @default(uuid())
+  name        String        @unique
+  avatar      String?
+  description String?
+  color       String?
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  snapshots   AISnapshot[]
+  trades      Trade[]
+
+  @@map("ai_models")
+}
+
+model AISnapshot {
+  id             String   @id @default(uuid())
+  aiModelId      String   @map("ai_model_id")
+  currentPnL     Decimal  @map("current_pnl") @db.Decimal(10, 2)
+  totalAssets    Decimal  @map("total_assets") @db.Decimal(10, 2)
+  openPositions  Int      @map("open_positions")
+  winRate        Decimal  @map("win_rate") @db.Decimal(5, 2)
+  rank           Int
+  rankChange     Int      @map("rank_change") @default(0)
+  timestamp      DateTime @default(now())
+
+  aiModel AIModel @relation(fields: [aiModelId], references: [id], onDelete: Cascade)
+
+  @@index([timestamp(sort: Desc)])
+  @@index([aiModelId, timestamp(sort: Desc)])
+  @@map("ai_snapshots")
+}
+
+model Trade {
+  id        String   @id @default(uuid())
+  aiModelId String   @map("ai_model_id")
+  action    String   // BUY, SELL, CLOSE
+  symbol    String
+  side      String?  // LONG, SHORT
+  amount    Decimal  @db.Decimal(15, 2)
+  price     Decimal  @db.Decimal(15, 2)
+  leverage  Int      @default(1)
+  pnl       Decimal  @db.Decimal(15, 2)
+  fee       Decimal  @db.Decimal(10, 2) @default(0)
+  timestamp DateTime @default(now())
+
+  aiModel AIModel @relation(fields: [aiModelId], references: [id], onDelete: Cascade)
+
+  @@index([aiModelId, timestamp(sort: Desc)])
+  @@index([timestamp(sort: Desc)])
+  @@index([symbol])
+  @@map("trades")
+}

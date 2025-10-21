@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/Zero/trae/**)",
+      "Read(//c/Users/Zero/**)",
+      "Bash(pnpm -v:*)",
+      "Bash(git --version:*)",
+      "Bash(npm install:*)",
+      "Bash(pnpm create:*)",
+      "Bash(pnpm init:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm dev)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm remove:*)",
+      "Bash(timeout /t 5)",
+      "Bash(taskkill:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nInitial commit: Alpha Arena Live - Supabase Integration\n\n- Integrated Supabase for database and backend services\n- Created Supabase client configuration\n- Updated environment variables\n- Added comprehensive setup documentation\n- Project structure with Next.js 14, TypeScript, Tailwind CSS\n- Prisma ORM with PostgreSQL schema\n- Multi-language support (English, Chinese)\n- Basic UI components and layout\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "readMore": "Read More",
+    "backToTop": "Back to Top",
+    "share": "Share"
+  },
+  "nav": {
+    "home": "Home",
+    "leaderboard": "Leaderboard",
+    "analysis": "Analysis",
+    "about": "About",
+    "follow": "Follow"
+  },
+  "home": {
+    "title": "Alpha Arena",
+    "titleHighlight": "Live",
+    "subtitle": "Real-time tracking and analysis of 6 AI models trading cryptocurrency with $60,000 real money",
+    "viewLeaderboard": "View Leaderboard",
+    "readAnalysis": "Read Analysis",
+    "stats": {
+      "aiModels": "AI Models",
+      "totalCapital": "Total Capital",
+      "topPerformer": "Top Performer",
+      "liveData": "Live Data"
+    },
+    "leaderboard": {
+      "title": "Live Leaderboard",
+      "updatedEvery": "Updated every 5 minutes",
+      "lastUpdate": "Last update"
+    },
+    "about": {
+      "title": "About Alpha Arena",
+      "description": "Alpha Arena is an experiment by nof1.ai where 6 leading AI models (Claude Sonnet, DeepSeek, ChatGPT, Gemini, Grok, and Qwen) are each given $10,000 to autonomously trade cryptocurrency perpetual futures on Hyperliquid exchange.",
+      "features": "This platform provides real-time tracking, data visualization, and deep analysis of each AI's trading performance, strategies, and decision-making.",
+      "readFullAnalysis": "Read Full Analysis",
+      "learnMore": "Learn More"
+    }
+  },
+  "leaderboard": {
+    "rank": "Rank",
+    "totalAssets": "Total Assets",
+    "positions": "Positions",
+    "winRate": "Win Rate",
+    "lastUpdated": "Last updated",
+    "rankChange": "Rank Change"
+  },
+  "analysis": {
+    "title": "Analysis & Insights",
+    "subtitle": "Deep dive analysis of AI trading strategies, performance breakdowns, and lessons from the Alpha Arena competition.",
+    "category": "Category",
+    "readTime": "min read",
+    "publishedOn": "Published on",
+    "backToAnalysis": "Back to Analysis",
+    "shareOnTwitter": "Share on Twitter",
+    "viewLeaderboard": "View Leaderboard",
+    "noArticles": "No articles found. Check back soon for deep analysis!",
+    "foundHelpful": "Found this analysis helpful?"
+  },
+  "about": {
+    "title": "About Alpha Arena Live",
+    "subtitle": "Real-time tracking, deep analysis, and insights from the groundbreaking AI trading experiment",
+    "experiment": {
+      "title": "What is Alpha Arena?",
+      "description1": "Alpha Arena is a groundbreaking experiment created by nof1.ai that pits six leading AI models against each other in real-money cryptocurrency trading.",
+      "description2": "Each AI model receives $10,000 in capital and trades autonomously on the Hyperliquid exchange, using real money and making completely independent trading decisions.",
+      "aiModels": "AI Models",
+      "totalCapital": "Total Capital",
+      "autonomous": "Autonomous"
+    },
+    "competitors": {
+      "title": "The Competitors",
+      "models": {
+        "deepseek": "Open-source model with aggressive momentum trading strategy",
+        "claude": "Conservative value-based approach with strict risk management",
+        "chatgpt": "Balanced multi-asset strategy with moderate risk-taking",
+        "gemini": "Reactive trading with high frequency and variable sizing",
+        "grok": "High-frequency scalping attempts with mixed results",
+        "qwen": "Moderate swing trading focused on multi-day trends"
+      }
+    },
+    "whatWeDo": {
+      "title": "What is Alpha Arena Live?",
+      "description": "Alpha Arena Live is an independent tracking and analysis platform that provides:",
+      "features": {
+        "realtime": "Real-time leaderboard - Updated every 5 minutes with current rankings, PnL, and performance metrics",
+        "analysis": "Deep analysis - Detailed breakdowns of each AI's trading strategy, decision-making, and performance",
+        "tracking": "Performance tracking - Historical data visualization and trend analysis",
+        "insights": "Educational insights - Learn from AI trading strategies and apply lessons to your own trading"
+      }
+    },
+    "whyMatters": {
+      "title": "Why This Matters",
+      "aiDecision": {
+        "title": "AI Decision-Making",
+        "description": "Watch how different AI architectures approach the same problem with completely different strategies — from conservative to aggressive, logical to seemingly emotional."
+      },
+      "realWorld": {
+        "title": "Real-World Performance",
+        "description": "This isn't backtesting or simulation. Real money, real markets, real consequences. See which strategies actually work when money is on the line."
+      },
+      "education": {
+        "title": "Trading Education",
+        "description": "Learn from both successes and failures. Understand risk management, position sizing, and psychology through objective AI behavior analysis."
+      },
+      "future": {
+        "title": "Future of Trading",
+        "description": "Get a glimpse into how AI might transform financial markets. Which approaches will dominate? What are the limitations? The future is being written now."
+      }
+    },
+    "data": {
+      "title": "Data & Transparency",
+      "source": "Data Source: All trading data is sourced from the official Alpha Arena leaderboard and verified against Hyperliquid on-chain transactions.",
+      "frequency": "Update Frequency: The leaderboard refreshes every 5 minutes with the latest available data.",
+      "analysis": "Analysis: All analysis and insights are independently created by our team. We are not affiliated with nof1.ai or any of the AI model creators."
+    },
+    "disclaimer": {
+      "title": "Important Disclaimer",
+      "notAdvice": "Not Financial Advice: All content on this website is for educational and informational purposes only. Nothing on this site constitutes financial, investment, or trading advice.",
+      "highRisk": "High Risk: Cryptocurrency trading involves substantial risk of loss. Leverage trading can result in total loss of capital. Past performance does not guarantee future results.",
+      "dyor": "Do Your Own Research: Always conduct your own research and consult with qualified financial advisors before making any investment decisions.",
+      "aiLimitations": "AI Limitations: AI trading strategies shown here may not be suitable for human traders and may perform differently in different market conditions."
+    },
+    "cta": {
+      "title": "Follow the Experiment",
+      "description": "Track real-time updates, read daily analysis, and learn from the world's first AI trading competition.",
+      "viewLeaderboard": "View Live Leaderboard",
+      "readAnalysis": "Read Analysis",
+      "followTwitter": "Follow on Twitter"
+    }
+  },
+  "footer": {
+    "about": "Alpha Arena Live",
+    "description": "Real-time tracking and analysis of 6 AI models trading cryptocurrency autonomously with $60,000.",
+    "disclaimer": "Built by traders, for traders. Not financial advice.",
+    "resources": "Resources",
+    "connect": "Connect",
+    "copyright": "Alpha Arena Live. All rights reserved. Data from nof1.ai Alpha Arena experiment."
+  }
+}

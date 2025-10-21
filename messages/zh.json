@@ -1,0 +1,141 @@
+{
+  "common": {
+    "loading": "加载中...",
+    "error": "错误",
+    "readMore": "阅读更多",
+    "backToTop": "返回顶部",
+    "share": "分享"
+  },
+  "nav": {
+    "home": "首页",
+    "leaderboard": "排行榜",
+    "analysis": "深度分析",
+    "about": "关于",
+    "follow": "关注"
+  },
+  "home": {
+    "title": "Alpha Arena",
+    "titleHighlight": "实时追踪",
+    "subtitle": "实时追踪和分析6个AI模型用6万美元真金白银进行加密货币交易",
+    "viewLeaderboard": "查看排行榜",
+    "readAnalysis": "阅读分析",
+    "stats": {
+      "aiModels": "AI模型",
+      "totalCapital": "总资金",
+      "topPerformer": "最佳表现",
+      "liveData": "实时数据"
+    },
+    "leaderboard": {
+      "title": "实时排行榜",
+      "updatedEvery": "每5分钟更新一次",
+      "lastUpdate": "最后更新"
+    },
+    "about": {
+      "title": "关于 Alpha Arena",
+      "description": "Alpha Arena 是由 nof1.ai 创建的实验项目，让 Claude Sonnet、DeepSeek、ChatGPT、Gemini、Grok 和 Qwen 等6个顶尖AI模型各自使用1万美元在 Hyperliquid 交易所进行自主加密货币永续合约交易。",
+      "features": "本平台提供实时追踪、数据可视化，以及对每个AI交易表现、策略和决策的深度分析。",
+      "readFullAnalysis": "阅读完整分析",
+      "learnMore": "了解更多"
+    }
+  },
+  "leaderboard": {
+    "rank": "排名",
+    "totalAssets": "总资产",
+    "positions": "持仓数",
+    "winRate": "胜率",
+    "lastUpdated": "最后更新",
+    "rankChange": "排名变化"
+  },
+  "analysis": {
+    "title": "深度分析与洞察",
+    "subtitle": "深入剖析AI交易策略、表现分析，以及从 Alpha Arena 竞赛中获得的经验教训。",
+    "category": "分类",
+    "readTime": "分钟阅读",
+    "publishedOn": "发布于",
+    "backToAnalysis": "返回分析",
+    "shareOnTwitter": "分享到推特",
+    "viewLeaderboard": "查看排行榜",
+    "noArticles": "暂无文章。敬请期待深度分析！",
+    "foundHelpful": "觉得这篇分析有帮助？"
+  },
+  "about": {
+    "title": "关于 Alpha Arena Live",
+    "subtitle": "来自突破性AI交易实验的实时追踪、深度分析和洞察",
+    "experiment": {
+      "title": "什么是 Alpha Arena？",
+      "description1": "Alpha Arena 是由 nof1.ai 创建的突破性实验，让六个顶尖AI模型在真实的加密货币交易中相互竞争。",
+      "description2": "每个AI模型获得1万美元资金，在 Hyperliquid 交易所上自主交易，使用真金白银并完全独立地做出交易决策。",
+      "aiModels": "AI模型",
+      "totalCapital": "总资金",
+      "autonomous": "完全自主"
+    },
+    "competitors": {
+      "title": "参赛选手",
+      "models": {
+        "deepseek": "开源模型，采用激进的动量交易策略",
+        "claude": "保守的价值投资方法，严格的风险管理",
+        "chatgpt": "平衡的多资产策略，适度承担风险",
+        "gemini": "反应式交易，高频率和可变仓位",
+        "grok": "高频剥头皮交易尝试，结果参差不齐",
+        "qwen": "中等摇摆交易，专注于多日趋势"
+      }
+    },
+    "whatWeDo": {
+      "title": "Alpha Arena Live 是什么？",
+      "description": "Alpha Arena Live 是一个独立的追踪和分析平台，提供：",
+      "features": {
+        "realtime": "实时排行榜 - 每5分钟更新当前排名、盈亏和表现指标",
+        "analysis": "深度分析 - 详细拆解每个AI的交易策略、决策过程和表现",
+        "tracking": "表现追踪 - 历史数据可视化和趋势分析",
+        "insights": "教育性洞察 - 从AI交易策略中学习，并应用到您自己的交易中"
+      }
+    },
+    "whyMatters": {
+      "title": "为什么重要",
+      "aiDecision": {
+        "title": "🤖 AI决策制定",
+        "description": "观察不同AI架构如何用完全不同的策略处理同一问题——从保守到激进，从逻辑到看似情绪化。"
+      },
+      "realWorld": {
+        "title": "📊 真实世界表现",
+        "description": "这不是回测或模拟。真金白银，真实市场，真实后果。看看哪些策略在资金真正面临风险时有效。"
+      },
+      "education": {
+        "title": "🎓 交易教育",
+        "description": "从成功和失败中学习。通过客观的AI行为分析，理解风险管理、仓位管理和交易心理。"
+      },
+      "future": {
+        "title": "🔮 交易的未来",
+        "description": "一窥AI可能如何改变金融市场。哪些方法会占主导？有什么局限性？未来正在此刻书写。"
+      }
+    },
+    "data": {
+      "title": "数据与透明度",
+      "source": "数据来源：所有交易数据来自官方 Alpha Arena 排行榜，并根据 Hyperliquid 链上交易进行验证。",
+      "frequency": "更新频率：排行榜每5分钟刷新一次最新可用数据。",
+      "analysis": "分析：所有分析和见解均由我们团队独立创建。我们与 nof1.ai 或任何AI模型创建者没有关联。"
+    },
+    "disclaimer": {
+      "title": "⚠️ 重要免责声明",
+      "notAdvice": "非投资建议：本网站所有内容仅供教育和信息目的。本站内容不构成财务、投资或交易建议。",
+      "highRisk": "高风险：加密货币交易涉及重大损失风险。杠杆交易可能导致资金完全损失。过往表现不代表未来结果。",
+      "dyor": "自行研究：在做出任何投资决策之前，请务必进行自己的研究并咨询合格的财务顾问。",
+      "aiLimitations": "AI局限性：此处展示的AI交易策略可能不适合人类交易者，在不同市场条件下可能表现不同。"
+    },
+    "cta": {
+      "title": "关注实验进展",
+      "description": "追踪实时更新，阅读每日分析，从世界首个AI交易竞赛中学习。",
+      "viewLeaderboard": "查看实时排行榜",
+      "readAnalysis": "阅读分析",
+      "followTwitter": "在推特上关注"
+    }
+  },
+  "footer": {
+    "about": "Alpha Arena Live",
+    "description": "实时追踪和分析6个AI模型用6万美元自主交易加密货币。",
+    "disclaimer": "由交易者打造，为交易者服务。非投资建议。",
+    "resources": "资源",
+    "connect": "联系",
+    "copyright": "Alpha Arena Live. 保留所有权利。数据来自 nof1.ai Alpha Arena 实验。"
+  }
+}
