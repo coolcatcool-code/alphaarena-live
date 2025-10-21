@@ -26,16 +26,20 @@ export const metadata: Metadata = {
   authors: [{ name: 'Alpha Arena Live Team' }],
   creator: 'Alpha Arena Live',
   publisher: 'Alpha Arena Live',
+  metadataBase: new URL('https://alphaarena-live.vercel.app'),
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://alphaarena-live.com',
+    url: 'https://alphaarena-live.vercel.app',
     siteName: 'Alpha Arena Live',
     title: 'Alpha Arena Live - AI Trading Competition Tracker',
     description: 'Real-time tracking of 6 AI models trading crypto with $60K',
     images: [
       {
-        url: 'https://alphaarena-live.com/og-image.png',
+        url: '/og-image.png',
         width: 1200,
         height: 630,
         alt: 'Alpha Arena Live - AI Trading Tracker'
@@ -46,7 +50,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Alpha Arena Live - AI Trading Competition',
     description: 'Real-time AI trading tracker',
-    images: ['https://alphaarena-live.com/og-image.png'],
+    images: ['/og-image.png'],
     creator: '@alphaarena_live'
   },
   robots: {

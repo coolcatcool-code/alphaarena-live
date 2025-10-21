@@ -17,7 +17,14 @@
       "Bash(taskkill:*)",
       "Bash(git init:*)",
       "Bash(git add:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nInitial commit: Alpha Arena Live - Supabase Integration\n\n- Integrated Supabase for database and backend services\n- Created Supabase client configuration\n- Updated environment variables\n- Added comprehensive setup documentation\n- Project structure with Next.js 14, TypeScript, Tailwind CSS\n- Prisma ORM with PostgreSQL schema\n- Multi-language support (English, Chinese)\n- Basic UI components and layout\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(git commit -m \"$(cat <<''EOF''\nInitial commit: Alpha Arena Live - Supabase Integration\n\n- Integrated Supabase for database and backend services\n- Created Supabase client configuration\n- Updated environment variables\n- Added comprehensive setup documentation\n- Project structure with Next.js 14, TypeScript, Tailwind CSS\n- Prisma ORM with PostgreSQL schema\n- Multi-language support (English, Chinese)\n- Basic UI components and layout\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(copy .env.local .env)",
+      "Bash(pnpm prisma db push:*)",
+      "Bash(git commit:*)",
+      "Bash(git remote add:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(pnpm prisma generate:*)"
     ],
     "deny": [],
     "ask": []
