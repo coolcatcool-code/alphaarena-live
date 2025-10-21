@@ -19,6 +19,6 @@ export default function robots(): MetadataRoute.Robots {
         crawlDelay: 1,
       },
     ],
-    sitemap: 'https://alphaarena-live.vercel.app/sitemap.xml',
+    sitemap: 'https://alphaarena-live.com/sitemap.xml',
   }
 }

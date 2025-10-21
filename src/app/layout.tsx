@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
+import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -26,14 +27,14 @@ export const metadata: Metadata = {
   authors: [{ name: 'Alpha Arena Live Team' }],
   creator: 'Alpha Arena Live',
   publisher: 'Alpha Arena Live',
-  metadataBase: new URL('https://alphaarena-live.vercel.app'),
+  metadataBase: new URL('https://alphaarena-live.com'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://alphaarena-live.vercel.app',
+    url: 'https://alphaarena-live.com',
     siteName: 'Alpha Arena Live',
     title: 'Alpha Arena Live - AI Trading Competition Tracker',
     description: 'Real-time tracking of 6 AI models trading crypto with $60K',
@@ -77,6 +78,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={inter.className}>
+        <GoogleAnalytics />
         <div className="flex min-h-screen flex-col">
           <Header />
           <main className="flex-1">
