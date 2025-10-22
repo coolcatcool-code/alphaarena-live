@@ -23,6 +23,38 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     }
   }
 
+  // JSON-LD Structured Data for Article
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: article.title,
+    description: article.excerpt,
+    author: {
+      '@type': 'Organization',
+      name: 'Alpha Arena Live',
+      url: 'https://alphaarena-live.com',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Alpha Arena Live',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://alphaarena-live.com/logo.png',
+      },
+    },
+    datePublished: article.publishedAt,
+    dateModified: article.publishedAt,
+    image: 'https://alphaarena-live.com/og-image.png',
+    articleSection: article.category,
+    keywords: article.tags.join(', '),
+    wordCount: Math.ceil(article.content.split(' ').length),
+    timeRequired: `PT${article.readTime}M`,
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `https://alphaarena-live.com/analysis/${params.slug}`,
+    },
+  }
+
   return {
     title: article.title,
     description: article.excerpt,
@@ -38,7 +70,10 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       card: 'summary_large_image',
       title: article.title,
       description: article.excerpt,
-    }
+    },
+    other: {
+      'script:ld+json': JSON.stringify(jsonLd),
+    },
   }
 }
 

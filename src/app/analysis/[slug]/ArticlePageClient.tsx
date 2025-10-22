@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { useTranslation } from '@/hooks/useTranslation'
+import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema'
 import type { Article } from '@/types'
 
 interface ArticlePageClientProps {
@@ -25,9 +26,17 @@ export function ArticlePageClient({ article }: ArticlePageClientProps) {
     }
   )
 
+  const breadcrumbItems = [
+    { name: 'Home', url: 'https://alphaarena-live.com' },
+    { name: 'Analysis', url: 'https://alphaarena-live.com/analysis' },
+    { name: article.title, url: `https://alphaarena-live.com/analysis/${article.slug}` },
+  ]
+
   return (
-    <main className="min-h-screen bg-gradient-to-b from-dark-bg to-slate-900">
-      <article className="container mx-auto px-4 py-12 max-w-4xl">
+    <>
+      <BreadcrumbSchema items={breadcrumbItems} />
+      <main className="min-h-screen bg-gradient-to-b from-dark-bg to-slate-900">
+        <article className="container mx-auto px-4 py-12 max-w-4xl">
         {/* Back Button */}
         <Link href="/analysis">
           <Button variant="ghost" className="mb-8">
@@ -115,5 +124,6 @@ export function ArticlePageClient({ article }: ArticlePageClientProps) {
         </footer>
       </article>
     </main>
+    </>
   )
 }
