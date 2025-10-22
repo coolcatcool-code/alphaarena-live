@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { useTranslation } from '@/hooks/useTranslation'
+import { FAQ } from '@/components/features/FAQ/FAQ'
 
 export default function AboutPage() {
   const { t } = useTranslation()
@@ -181,6 +182,9 @@ export default function AboutPage() {
             </div>
           </Card>
         </section>
+
+        {/* FAQ Section */}
+        <FAQ />
 
         {/* Disclaimer */}
         <section className="mb-16">
