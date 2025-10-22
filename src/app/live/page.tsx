@@ -40,7 +40,7 @@ export default function LivePage() {
 
   useEffect(() => {
     fetchData()
-    const interval = setInterval(fetchData, 5000) // Update every 5 seconds
+    const interval = setInterval(fetchData, 60000) // Update every 1 minute
     return () => clearInterval(interval)
   }, [])
 
@@ -51,8 +51,9 @@ export default function LivePage() {
     return acc
   }, {} as Record<string, Position[]>)
 
-  const formatTime = (date: Date) => {
-    const seconds = Math.floor((Date.now() - date.getTime()) / 1000)
+  const formatTime = (date: Date | string) => {
+    const d = new Date(date)
+    const seconds = Math.floor((Date.now() - d.getTime()) / 1000)
     if (seconds < 60) return `${seconds}s ago`
     const minutes = Math.floor(seconds / 60)
     if (minutes < 60) return `${minutes}m ago`

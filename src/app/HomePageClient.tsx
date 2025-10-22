@@ -24,7 +24,14 @@ export function HomePageClient() {
         setLoading(false)
       }
     }
+
+    // Initial fetch
     fetchData()
+
+    // Refresh every 1 minute (60000ms)
+    const interval = setInterval(fetchData, 60000)
+
+    return () => clearInterval(interval)
   }, [])
 
   const topPerformer = leaderboardData?.data[0]?.currentPnL.toFixed(1) || '0'

@@ -26,7 +26,16 @@
       "Bash(git push:*)",
       "Bash(pnpm prisma generate:*)",
       "WebFetch(domain:www.alphaarena-live.com)",
-      "Bash(if exist nul del nul)"
+      "Bash(if exist nul del nul)",
+      "WebSearch",
+      "WebFetch(domain:nof1.ai)",
+      "WebFetch(domain:hyperliquid.gitbook.io)",
+      "Bash(curl:*)",
+      "Bash(python:*)",
+      "Bash(for ai in claude-1 gemini-1 chatgpt-1 grok-1 qwen-1)",
+      "Bash(do echo \"=== $ai ===\")",
+      "Bash(done)",
+      "Bash(if exist .next\\cache rd /s /q .next\\cache)"
     ],
     "deny": [],
     "ask": []

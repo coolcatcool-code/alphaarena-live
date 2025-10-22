@@ -34,7 +34,7 @@ export default function AIDetailPage() {
 
   useEffect(() => {
     fetchData()
-    const interval = setInterval(fetchData, 5000)
+    const interval = setInterval(fetchData, 60000) // Update every 1 minute
     return () => clearInterval(interval)
   }, [aiModelId])
 

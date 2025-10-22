@@ -5,10 +5,10 @@ export const revalidate = 0
 
 export async function GET(
   request: Request,
-  { params }: { params: { aiModelId: string } }
+  { params }: { params: Promise<{ aiModelId: string }> }
 ) {
   try {
-    const { aiModelId } = params
+    const { aiModelId } = await params
 
     const positions = mockPositions.filter(
       p => p.aiModelId === aiModelId && p.status === 'OPEN'

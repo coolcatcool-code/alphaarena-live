@@ -1,56 +1,142 @@
 import { NextResponse } from 'next/server'
-import { mockPositions, aiModels, generateMockTradeHistory, mockSnapshots } from '@/lib/mock/data'
+import { createClient } from '@/lib/supabase/server'
 
 export const revalidate = 0
 
 export async function GET(
   request: Request,
-  { params }: { params: { aiModelId: string } }
+  { params }: { params: Promise<{ aiModelId: string }> }
 ) {
   try {
-    const { aiModelId } = params
+    const { aiModelId } = await params
+    const supabase = createClient()
 
-    const aiModel = aiModels[aiModelId]
-    if (!aiModel) {
+    // Get AI model
+    const { data: aiModel, error: aiError } = await supabase
+      .from('ai_models')
+      .select('*')
+      .eq('id', aiModelId)
+      .single()
+
+    if (aiError || !aiModel) {
       return NextResponse.json(
         { error: 'AI Model not found' },
         { status: 404 }
       )
     }
 
-    const snapshot = mockSnapshots.find(s => s.aiModelId === aiModelId)
-    if (!snapshot) {
+    // Get snapshot
+    const { data: snapshot, error: snapshotError } = await supabase
+      .from('snapshots')
+      .select('*')
+      .eq('ai_model_id', aiModelId)
+      .single()
+
+    if (snapshotError || !snapshot) {
       return NextResponse.json(
         { error: 'Snapshot not found' },
         { status: 404 }
       )
     }
 
-    const positions = mockPositions.filter(
-      p => p.aiModelId === aiModelId && p.status === 'OPEN'
-    )
+    // Get positions
+    const { data: positions, error: posError } = await supabase
+      .from('positions')
+      .select('*')
+      .eq('ai_model_id', aiModelId)
+      .eq('status', 'OPEN')
+      .order('opened_at', { ascending: false })
 
-    const recentTrades = generateMockTradeHistory(aiModelId, 20)
+    // Get recent trades
+    const { data: trades, error: tradesError } = await supabase
+      .from('trades')
+      .select('*')
+      .eq('ai_model_id', aiModelId)
+      .order('timestamp', { ascending: false })
+      .limit(20)
 
-    // 计算统计数据
-    const allTrades = generateMockTradeHistory(aiModelId, 100)
-    const totalTrades = allTrades.length
-    const avgHoldTime = 4.2 // hours
-    const favoriteAsset = 'BTC'
-    const avgLeverage = positions.reduce((sum, p) => sum + p.leverage, 0) / positions.length || 2
+    // Transform positions
+    const transformedPositions = (positions || []).map(p => ({
+      id: p.id,
+      aiModelId: p.ai_model_id,
+      symbol: p.symbol,
+      side: p.side,
+      entryPrice: Number(p.entry_price),
+      currentPrice: Number(p.current_price),
+      size: Number(p.size),
+      leverage: p.leverage,
+      pnl: Number(p.pnl),
+      pnlPercentage: Number(p.pnl_percentage),
+      status: p.status,
+      openedAt: new Date(p.opened_at),
+      closedAt: p.closed_at ? new Date(p.closed_at) : undefined,
+    }))
+
+    // Transform trades
+    const recentTrades = (trades || []).map(t => ({
+      id: t.id,
+      aiModelId: t.ai_model_id,
+      action: t.action,
+      symbol: t.symbol,
+      side: t.side,
+      amount: Number(t.amount),
+      price: Number(t.price),
+      leverage: t.leverage,
+      pnl: Number(t.pnl),
+      fee: Number(t.fee),
+      timestamp: new Date(t.timestamp),
+    }))
+
+    // Calculate statistics
+    const totalTrades = recentTrades.length
+    const avgHoldTime = transformedPositions.length > 0
+      ? transformedPositions.reduce((sum, p) => {
+          const holdTime = (Date.now() - p.openedAt.getTime()) / (1000 * 60 * 60)
+          return sum + holdTime
+        }, 0) / transformedPositions.length
+      : 0
+
+    const assetCounts: Record<string, number> = {}
+    recentTrades.forEach(t => {
+      assetCounts[t.symbol] = (assetCounts[t.symbol] || 0) + 1
+    })
+    const favoriteAsset = Object.entries(assetCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A'
+
+    const avgLeverage = transformedPositions.length > 0
+      ? transformedPositions.reduce((sum, p) => sum + p.leverage, 0) / transformedPositions.length
+      : 0
 
     return NextResponse.json({
-      aiModel,
-      snapshot,
-      positions,
+      aiModel: {
+        id: aiModel.id,
+        name: aiModel.name,
+        avatar: aiModel.avatar,
+        description: aiModel.description,
+        color: aiModel.color,
+        createdAt: new Date(aiModel.created_at),
+        updatedAt: new Date(aiModel.updated_at),
+      },
+      snapshot: {
+        id: snapshot.id,
+        aiModelId: snapshot.ai_model_id,
+        currentPnL: Number(snapshot.current_pnl),
+        totalAssets: Number(snapshot.total_assets),
+        openPositions: transformedPositions.length,
+        winRate: Number(snapshot.win_rate),
+        rank: snapshot.rank,
+        rankChange: snapshot.rank_change,
+        timestamp: new Date(snapshot.timestamp),
+      },
+      positions: transformedPositions,
       recentTrades,
       stats: {
         totalTrades,
-        avgHoldTime,
+        avgHoldTime: Math.round(avgHoldTime * 10) / 10,
         favoriteAsset,
         avgLeverage: Math.round(avgLeverage * 10) / 10,
       },
       timestamp: new Date().toISOString(),
+      source: 'supabase'
     })
   } catch (error) {
     console.error('AI Detail API error:', error)
