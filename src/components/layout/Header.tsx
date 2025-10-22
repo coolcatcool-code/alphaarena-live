@@ -27,6 +27,16 @@ export function Header() {
             {t('nav.leaderboard')}
           </Link>
           <Link
+            href="/live"
+            className="text-sm font-medium text-danger hover:text-danger/80 transition-colors flex items-center gap-1"
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-danger opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-danger"></span>
+            </span>
+            LIVE
+          </Link>
+          <Link
             href="/analysis"
             className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"
           >

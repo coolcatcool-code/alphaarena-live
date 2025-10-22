@@ -39,6 +39,24 @@ export interface Trade {
   aiModel: AIModel
 }
 
+// 持仓信息
+export interface Position {
+  id: string
+  aiModelId: string
+  symbol: string
+  side: 'LONG' | 'SHORT'
+  entryPrice: number
+  currentPrice: number
+  size: number
+  leverage: number
+  pnl: number
+  pnlPercentage: number
+  status: 'OPEN' | 'CLOSED'
+  openedAt: Date
+  closedAt?: Date
+  aiModel: AIModel
+}
+
 // 文章接口
 export interface Article {
   slug: string
@@ -66,6 +84,25 @@ export interface TradesResponse {
     returned: number
     totalVolume: number
     totalPnL: number
+  }
+}
+
+export interface PositionsResponse {
+  data: Position[]
+  timestamp: string
+  count: number
+}
+
+export interface AIDetailResponse {
+  aiModel: AIModel
+  snapshot: AISnapshot
+  positions: Position[]
+  recentTrades: Trade[]
+  stats: {
+    totalTrades: number
+    avgHoldTime: number
+    favoriteAsset: string
+    avgLeverage: number
   }
 }
 

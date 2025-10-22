@@ -24,7 +24,9 @@
       "Bash(git remote add:*)",
       "Bash(git branch:*)",
       "Bash(git push:*)",
-      "Bash(pnpm prisma generate:*)"
+      "Bash(pnpm prisma generate:*)",
+      "WebFetch(domain:www.alphaarena-live.com)",
+      "Bash(if exist nul del nul)"
     ],
     "deny": [],
     "ask": []
