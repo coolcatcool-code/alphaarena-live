@@ -14,6 +14,7 @@
 - 📊 **Performance Charts** - Interactive visualizations of trading trends
 - 📝 **Deep Analysis** - Expert insights into AI trading strategies
 - 🔄 **Auto-Updates** - Data refreshed every 5 minutes via Vercel Cron
+- 🤖 **AI-Powered Articles** - Daily automated content generation with GPT-4
 - 📱 **Responsive Design** - Optimized for desktop, tablet, and mobile
 - 🔍 **SEO Optimized** - Built for maximum search visibility
 
@@ -94,6 +95,7 @@ alphaarena/
 - **Database**: PostgreSQL (Supabase)
 - **ORM**: Prisma
 - **Cron**: Vercel Cron Jobs
+- **AI**: OpenAI GPT-4 (Content Generation)
 
 ### Infrastructure
 - **Hosting**: Vercel
@@ -103,9 +105,26 @@ alphaarena/
 
 ## 📚 Documentation
 
-- **[EXECUTION-PLAN.md](./EXECUTION-PLAN.md)** - Complete execution roadmap (48hr MVP to launch)
+### Getting Started
+- **[QUICK-START.md](./QUICK-START.md)** - ⚡ 5-minute setup for AI automation
+- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Production deployment guide
+
+### AI Content Automation
+- **[AI-AUTOMATION-SETUP.md](./AI-AUTOMATION-SETUP.md)** - Complete AI article generation guide
+- **[ARTICLE-AUTOMATION.md](./ARTICLE-AUTOMATION.md)** - Basic article automation docs
+
+### Database & Infrastructure
+- **[SUPABASE-SETUP.md](./SUPABASE-SETUP.md)** - Database setup and configuration
+- **[CRON-JOB-SETUP.md](./CRON-JOB-SETUP.md)** - Auto-sync setup with Vercel Cron
+
+### SEO & Marketing
+- **[SEO-OPTIMIZATION-PLAN.md](./SEO-OPTIMIZATION-PLAN.md)** - SEO strategy and implementation
+- **[SEO-IMPLEMENTATION-SUMMARY.md](./SEO-IMPLEMENTATION-SUMMARY.md)** - What's been implemented
+
+### Development
 - **[DEVELOPMENT-GUIDE.md](./DEVELOPMENT-GUIDE.md)** - Technical documentation and best practices
-- **[alpha-arena-prd.md](./alpha-arena-prd.md)** - Original product requirements document
+- **[SECURITY-AUDIT.md](./SECURITY-AUDIT.md)** - Security review and best practices
+- **[alpha-arena-prd.md](./alpha-arena-prd.md)** - Original product requirements
 
 ## 🗄️ Database Schema
 
@@ -167,10 +186,16 @@ vercel domains add alphaarena-live.com
 
 Set these in Vercel Dashboard → Settings → Environment Variables:
 
-- `DATABASE_URL`
-- `DIRECT_URL`
-- `NEXT_PUBLIC_GA_ID`
-- `CRON_SECRET`
+**Required:**
+- `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
+- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service key
+- `DATABASE_URL` - PostgreSQL connection string
+- `DIRECT_URL` - Direct database URL
+
+**Optional:**
+- `OPENAI_API_KEY` - For AI article generation (see [QUICK-START.md](./QUICK-START.md))
+- `NEXT_PUBLIC_GA_ID` - Google Analytics ID
+- `CRON_SECRET` - Secure your cron endpoints
 
 ## 📊 API Endpoints
 
