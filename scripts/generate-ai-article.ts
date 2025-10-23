@@ -1,6 +1,7 @@
 /**
  * AI增强的文章生成器
- * 使用OpenAI GPT-4自动生成高质量分析文章
+ * 使用OpenRouter API自动生成高质量分析文章
+ * 支持多种AI模型：GPT-4, Claude, DeepSeek, Llama等
  */
 
 import { config } from 'dotenv'
@@ -16,21 +17,40 @@ config({ path: '.env.local' })
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
-// OpenAI配置
+// OpenRouter配置 (兼容OpenAI SDK)
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || '',
+  apiKey: process.env.OPENROUTER_API_KEY || '',
+  baseURL: 'https://openrouter.ai/api/v1',
+  defaultHeaders: {
+    'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'https://alphaarena-live.com',
+    'X-Title': 'Alpha Arena Live'
+  }
 })
+
+// AI模型配置（可在环境变量中修改）
+const AI_MODEL = process.env.AI_MODEL || 'openai/gpt-4o-mini' // 默认使用GPT-4o-mini（便宜）
 
 if (!supabaseUrl || !supabaseKey) {
   console.error('❌ Missing Supabase environment variables!')
   process.exit(1)
 }
 
-if (!process.env.OPENAI_API_KEY) {
-  console.error('❌ Missing OPENAI_API_KEY! Please set it in .env.local')
-  console.error('Get your API key from: https://platform.openai.com/api-keys')
+if (!process.env.OPENROUTER_API_KEY) {
+  console.error('❌ Missing OPENROUTER_API_KEY! Please set it in .env.local')
+  console.error('Get your API key from: https://openrouter.ai/keys')
+  console.error('')
+  console.error('OpenRouter支持的模型示例:')
+  console.error('  - openai/gpt-4o-mini (推荐，便宜)')
+  console.error('  - anthropic/claude-3.5-sonnet (质量最高)')
+  console.error('  - deepseek/deepseek-chat (超便宜)')
+  console.error('  - meta-llama/llama-3.1-70b-instruct (开源)')
+  console.error('')
+  console.error('在 .env.local 中设置模型:')
+  console.error('  AI_MODEL=openai/gpt-4o-mini')
   process.exit(1)
 }
+
+console.log(`🤖 Using AI model: ${AI_MODEL}`)
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
@@ -179,7 +199,7 @@ Requirements:
 IMPORTANT: Return ONLY the markdown content without the YAML frontmatter. Start directly with the main title (# Alpha Arena Daily Report - ${formattedDate})`
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-4o',
+    model: AI_MODEL,
     messages: [
       {
         role: 'system',
@@ -311,7 +331,7 @@ Requirements:
 IMPORTANT: Return ONLY the markdown content without YAML frontmatter. Start with the main title (# AI Trading Strategy Comparison)`
 
   const completion = await openai.chat.completions.create({
-    model: 'gpt-4o',
+    model: AI_MODEL,
     messages: [
       {
         role: 'system',

@@ -95,7 +95,7 @@ alphaarena/
 - **Database**: PostgreSQL (Supabase)
 - **ORM**: Prisma
 - **Cron**: Vercel Cron Jobs
-- **AI**: OpenAI GPT-4 (Content Generation)
+- **AI**: OpenRouter API (支持100+模型，包括免费模型)
 
 ### Infrastructure
 - **Hosting**: Vercel
@@ -110,6 +110,7 @@ alphaarena/
 - **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Production deployment guide
 
 ### AI Content Automation
+- **[OPENROUTER-SETUP.md](./OPENROUTER-SETUP.md)** - ⚡ OpenRouter AI setup (推荐，支持免费模型)
 - **[AI-AUTOMATION-SETUP.md](./AI-AUTOMATION-SETUP.md)** - Complete AI article generation guide
 - **[ARTICLE-AUTOMATION.md](./ARTICLE-AUTOMATION.md)** - Basic article automation docs
 
@@ -193,7 +194,8 @@ Set these in Vercel Dashboard → Settings → Environment Variables:
 - `DIRECT_URL` - Direct database URL
 
 **Optional:**
-- `OPENAI_API_KEY` - For AI article generation (see [QUICK-START.md](./QUICK-START.md))
+- `OPENROUTER_API_KEY` - For AI article generation (see [QUICK-START.md](./QUICK-START.md))
+- `AI_MODEL` - AI model selection (default: openai/gpt-4o-mini)
 - `NEXT_PUBLIC_GA_ID` - Google Analytics ID
 - `CRON_SECRET` - Secure your cron endpoints
 

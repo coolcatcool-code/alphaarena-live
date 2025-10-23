@@ -35,7 +35,8 @@
       "Bash(for ai in claude-1 gemini-1 chatgpt-1 grok-1 qwen-1)",
       "Bash(do echo \"=== $ai ===\")",
       "Bash(done)",
-      "Bash(if exist .next\\cache rd /s /q .next\\cache)"
+      "Bash(if exist .next\\cache rd /s /q .next\\cache)",
+      "Bash(pnpm generate-articles:*)"
     ],
     "deny": [],
     "ask": []

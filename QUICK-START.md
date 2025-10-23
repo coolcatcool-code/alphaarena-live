@@ -1,21 +1,33 @@
-# 🚀 5分钟快速启动指南
+# 🚀 3分钟快速启动指南
 
 ## 让文章每天自动生成并发布到网站
 
-### 步骤1: 获取OpenAI API Key（2分钟）
+### 步骤1: 获取OpenRouter API Key（1分钟）
 
-1. 访问 https://platform.openai.com/api-keys
-2. 登录/注册账号
-3. 点击 **Create new secret key**
-4. 复制key（格式：`sk-proj-xxx...`）
-5. 充值至少$5（设置 → Billing）
+1. 访问 https://openrouter.ai/keys
+2. 使用Google账号登录
+3. 点击 **Create Key**
+4. 复制key（格式：`sk-or-v1-xxx...`）
+5. （可选）充值$5 - 很多模型免费！
 
-**费用**: 每天约$0.10-0.20，每月$3-6
+**推荐**: 使用免费的Gemini 2.0或便宜的DeepSeek
+**费用**: $0（免费模型）或 每月$0.50-1.50（付费模型）
 
-### 步骤2: 配置GitHub Secrets（2分钟）
+### 步骤2: 配置GitHub Secrets（1分钟）
 
 1. 打开 https://github.com/你的用户名/alphaarena/settings/secrets/actions
-2. 点击 **New repository secret**，添加3个secrets：
+2. 点击 **New repository secret**，添加4个secrets：
+
+```
+名称: OPENROUTER_API_KEY
+值: sk-or-v1-...(你刚才复制的key)
+```
+
+```
+名称: AI_MODEL
+值: google/gemini-2.0-flash-exp:free
+```
+（或选择其他模型，见 [OPENROUTER-SETUP.md](./OPENROUTER-SETUP.md)）
 
 ```
 名称: NEXT_PUBLIC_SUPABASE_URL
@@ -25,11 +37,6 @@
 ```
 名称: SUPABASE_SERVICE_ROLE_KEY
 值: eyJhbGci...(你的完整key)
-```
-
-```
-名称: OPENAI_API_KEY
-值: sk-proj-...(你刚才复制的key)
 ```
 
 ### 步骤3: 推送代码（1分钟）
@@ -62,7 +69,8 @@ git push origin main
 
 添加到 `.env.local`:
 ```env
-OPENAI_API_KEY=sk-proj-你的key
+OPENROUTER_API_KEY=sk-or-v1-你的key
+AI_MODEL=google/gemini-2.0-flash-exp:free
 ```
 
 运行:
@@ -95,6 +103,8 @@ cat content/articles/daily-report-$(date +%Y-%m-%d).md
 
 ---
 
-**预计设置时间**: 5分钟
-**月度成本**: $1-6
+**预计设置时间**: 3分钟
+**月度成本**: $0-2（免费模型可用！）
 **维护工作**: 0（全自动）
+
+**详细文档**: 查看 [OPENROUTER-SETUP.md](./OPENROUTER-SETUP.md) 了解更多模型选择
