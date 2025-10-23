@@ -9,11 +9,28 @@ export async function POST() {
     const supabase = createClient()
 
     // Fetch real-time data from nof1.ai
-    const [{ leaderboard }, { positions: rawPositions }, { trades: rawTrades }] = await Promise.all([
-      fetchNof1Leaderboard(),
-      fetchNof1Positions(),
-      fetchNof1Trades()
-    ])
+    let leaderboard, rawPositions, rawTrades
+
+    try {
+      const results = await Promise.all([
+        fetchNof1Leaderboard(),
+        fetchNof1Positions(),
+        fetchNof1Trades()
+      ])
+      leaderboard = results[0].leaderboard
+      rawPositions = results[1].positions
+      rawTrades = results[2].trades
+    } catch (fetchError) {
+      console.error('Error fetching from nof1.ai:', fetchError)
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Failed to fetch data from nof1.ai',
+          details: fetchError instanceof Error ? fetchError.message : 'Unknown error'
+        },
+        { status: 500 }
+      )
+    }
 
     // Transform data
     const snapshots = transformLeaderboard(leaderboard)

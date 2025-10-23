@@ -57,25 +57,43 @@ export interface Nof1Trade {
 
 export async function fetchNof1Leaderboard(): Promise<{ leaderboard: Nof1LeaderboardEntry[] }> {
   const response = await fetch(`${NOF1_API_BASE}/leaderboard`, {
-    next: { revalidate: 60 }, // Cache for 60 seconds
+    cache: 'no-store',
+    headers: {
+      'Accept': 'application/json',
+    },
   })
-  if (!response.ok) throw new Error('Failed to fetch leaderboard')
+  if (!response.ok) {
+    const errorText = await response.text()
+    throw new Error(`Failed to fetch leaderboard: ${response.status} - ${errorText}`)
+  }
   return response.json()
 }
 
 export async function fetchNof1Positions(): Promise<{ positions: Nof1Position[] }> {
   const response = await fetch(`${NOF1_API_BASE}/positions`, {
-    next: { revalidate: 60 },
+    cache: 'no-store',
+    headers: {
+      'Accept': 'application/json',
+    },
   })
-  if (!response.ok) throw new Error('Failed to fetch positions')
+  if (!response.ok) {
+    const errorText = await response.text()
+    throw new Error(`Failed to fetch positions: ${response.status} - ${errorText}`)
+  }
   return response.json()
 }
 
 export async function fetchNof1Trades(): Promise<{ trades: Nof1Trade[] }> {
   const response = await fetch(`${NOF1_API_BASE}/trades`, {
-    next: { revalidate: 300 }, // Cache trades for 5 min
+    cache: 'no-store',
+    headers: {
+      'Accept': 'application/json',
+    },
   })
-  if (!response.ok) throw new Error('Failed to fetch trades')
+  if (!response.ok) {
+    const errorText = await response.text()
+    throw new Error(`Failed to fetch trades: ${response.status} - ${errorText}`)
+  }
   return response.json()
 }
 
