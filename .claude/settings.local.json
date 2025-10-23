@@ -36,7 +36,8 @@
       "Bash(do echo \"=== $ai ===\")",
       "Bash(done)",
       "Bash(if exist .next\\cache rd /s /q .next\\cache)",
-      "Bash(pnpm generate-articles:*)"
+      "Bash(pnpm generate-articles:*)",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "ask": []

@@ -11,7 +11,8 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "postinstall": "prisma generate",
     "generate-articles": "tsx scripts/generate-article.ts",
-    "generate-ai-articles": "tsx scripts/generate-ai-article.ts"
+    "generate-ai-articles": "tsx scripts/generate-ai-article.ts",
+    "generate-seo-article": "tsx scripts/generate-seo-article.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.17.1",
@@ -26,6 +27,7 @@
     "@vercel/analytics": "^1.5.0",
     "axios": "^1.12.2",
     "chart.js": "^4.5.1",
+    "cheerio": "^1.1.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",

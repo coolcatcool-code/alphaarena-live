@@ -57,6 +57,15 @@ jobs:
           NEXT_PUBLIC_APP_URL: https://alphaarena-live.com
         run: pnpm generate-ai-articles
 
+      - name: Generate SEO-optimized article
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          AI_MODEL: ${{ secrets.AI_MODEL }}
+          NEXT_PUBLIC_APP_URL: https://alphaarena-live.com
+        run: pnpm generate-seo-article
+
       - name: Check for changes
         id: verify_diff
         run: |
