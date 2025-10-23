@@ -8,6 +8,23 @@ export async function POST() {
   try {
     const supabase = createClient()
 
+    // Test Supabase connection first
+    const { error: connectionError } = await supabase
+      .from('ai_models')
+      .select('id', { count: 'exact', head: true })
+
+    if (connectionError) {
+      console.error('Supabase connection error:', connectionError)
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Failed to connect to Supabase',
+          details: connectionError.message
+        },
+        { status: 500 }
+      )
+    }
+
     // Fetch real-time data from nof1.ai
     let leaderboard, rawPositions, rawTrades
 
@@ -136,10 +153,22 @@ export async function POST() {
 
   } catch (error) {
     console.error('Sync error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorStack = error instanceof Error ? error.stack : undefined
+
+    // Log detailed error for debugging
+    console.error('Error details:', {
+      message: errorMessage,
+      stack: errorStack,
+      type: typeof error,
+      error: JSON.stringify(error, null, 2)
+    })
+
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: errorMessage,
+        details: errorStack?.split('\n').slice(0, 3).join('\n') // First 3 lines of stack
       },
       { status: 500 }
     )
