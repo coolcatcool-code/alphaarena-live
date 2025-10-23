@@ -82,39 +82,46 @@ export async function POST() {
       throw snapshotsError
     }
 
-    // 2. Sync Positions (delete old, insert new)
-    const { error: deleteError } = await supabase
-      .from('positions')
-      .delete()
-      .eq('status', 'OPEN')
+    // 2. Sync Positions (delete old, insert new) - OPTIONAL since API is deprecated
+    let positionsInserted = 0
+    if (positions && positions.length > 0) {
+      const { error: deleteError } = await supabase
+        .from('positions')
+        .delete()
+        .eq('status', 'OPEN')
 
-    if (deleteError) {
-      console.error('Error deleting old positions:', deleteError)
-    }
+      if (deleteError) {
+        console.warn('Error deleting old positions:', deleteError)
+      }
 
-    const positionsToInsert = positions.map(p => ({
-      id: p.id,
-      ai_model_id: p.aiModelId,
-      symbol: p.symbol,
-      side: p.side,
-      entry_price: p.entryPrice,
-      current_price: p.currentPrice,
-      size: p.size,
-      leverage: p.leverage,
-      pnl: p.pnl,
-      pnl_percentage: p.pnlPercentage,
-      status: p.status,
-      opened_at: p.openedAt,
-      closed_at: p.closedAt || null
-    }))
+      const positionsToInsert = positions.map(p => ({
+        id: p.id,
+        ai_model_id: p.aiModelId,
+        symbol: p.symbol,
+        side: p.side,
+        entry_price: p.entryPrice,
+        current_price: p.currentPrice,
+        size: p.size,
+        leverage: p.leverage,
+        pnl: p.pnl,
+        pnl_percentage: p.pnlPercentage,
+        status: p.status,
+        opened_at: p.openedAt,
+        closed_at: p.closedAt || null
+      }))
 
-    const { error: positionsError } = await supabase
-      .from('positions')
-      .insert(positionsToInsert)
+      const { error: positionsError } = await supabase
+        .from('positions')
+        .insert(positionsToInsert)
 
-    if (positionsError) {
-      console.error('Error syncing positions:', positionsError)
-      throw positionsError
+      if (positionsError) {
+        console.warn('Error syncing positions (non-fatal):', positionsError)
+        // Don't throw - positions are optional now
+      } else {
+        positionsInserted = positionsToInsert.length
+      }
+    } else {
+      console.log('No positions data available (API deprecated)')
     }
 
     // 3. Sync Trades (only insert new ones)
@@ -145,10 +152,11 @@ export async function POST() {
       success: true,
       synced: {
         snapshots: snapshotsToInsert.length,
-        positions: positionsToInsert.length,
+        positions: positionsInserted,
         trades: tradesToInsert.length
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      note: positions.length === 0 ? 'Positions API deprecated - no position data available' : undefined
     })
 
   } catch (error) {
