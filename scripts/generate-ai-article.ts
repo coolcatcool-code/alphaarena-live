@@ -216,13 +216,16 @@ IMPORTANT: Return ONLY the markdown content without the YAML frontmatter. Start 
 
   const aiGeneratedContent = completion.choices[0].message.content || ''
 
-  // 添加frontmatter
+  // 添加frontmatter（兼容网站格式）
+  const excerpt = `Daily performance analysis of ${sortedAIs.length} AI trading models. ${aiModelMap[topPerformer.ai_model_id]?.name} leads with ${topPerformer.current_pnl >= 0 ? '+' : ''}${topPerformer.current_pnl.toFixed(2)}% returns.`
+
   const article = `---
 title: "Alpha Arena Daily Report - ${formattedDate}"
-description: "AI-powered daily analysis of 6 trading models competing in Alpha Arena"
-date: "${date}"
-author: "Alpha Arena Analytics Team"
+excerpt: "${excerpt}"
+category: "analysis"
 tags: ["daily-report", "ai-trading", "performance-analysis", "automated"]
+publishedAt: "${date}"
+readTime: 8
 ---
 
 ${aiGeneratedContent}
@@ -349,12 +352,18 @@ IMPORTANT: Return ONLY the markdown content without YAML frontmatter. Start with
   const aiGeneratedContent = completion.choices[0].message.content || ''
 
   const weekNumber = Math.ceil(new Date().getDate() / 7)
+
+  // 生成excerpt
+  const topPerformer = aiTradingPatterns.sort((a, b) => b.currentPnL - a.currentPnL)[0]
+  const excerpt = `Deep dive into trading strategies of ${aiTradingPatterns.length} AI models. ${topPerformer?.name || 'Top performer'} leads with ${topPerformer?.tradingStyle || 'balanced'} approach.`
+
   const article = `---
 title: "AI Trading Strategy Comparison - Week ${weekNumber}"
-description: "Expert analysis of trading strategies employed by competing AI models"
-date: "${date}"
-author: "Alpha Arena Strategy Team"
+excerpt: "${excerpt}"
+category: "analysis"
 tags: ["strategy-analysis", "ai-comparison", "trading-patterns", "automated"]
+publishedAt: "${date}"
+readTime: 10
 ---
 
 ${aiGeneratedContent}
