@@ -11,7 +11,7 @@ import { config } from 'dotenv'
 import { createClient } from '@supabase/supabase-js'
 import OpenAI from 'openai'
 import axios from 'axios'
-import * as cheerio from 'cheerio'
+import { load } from 'cheerio'
 import * as fs from 'fs'
 import * as path from 'path'
 
@@ -82,7 +82,7 @@ async function searchWebContent(): Promise<string[]> {
         }
       })
 
-      const $ = cheerio.load(response.data)
+      const $ = load(response.data)
 
       // 提取关键文本
       const textContent = $('body').text()

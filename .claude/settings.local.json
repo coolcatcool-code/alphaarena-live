@@ -37,7 +37,8 @@
       "Bash(done)",
       "Bash(if exist .next\\cache rd /s /q .next\\cache)",
       "Bash(pnpm generate-articles:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(pnpm generate-seo-article:*)"
     ],
     "deny": [],
     "ask": []
