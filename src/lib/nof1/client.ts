@@ -76,6 +76,15 @@ export async function fetchNof1Positions(): Promise<{ positions: Nof1Position[] 
       'Accept': 'application/json',
     },
   })
+
+  // Handle deprecated API - it returns 410 but with valid JSON
+  if (response.status === 410) {
+    const data = await response.json()
+    console.log('Positions API deprecated:', data.message)
+    // Return empty positions array as indicated by the API
+    return { positions: [] }
+  }
+
   if (!response.ok) {
     const errorText = await response.text()
     throw new Error(`Failed to fetch positions: ${response.status} - ${errorText}`)
