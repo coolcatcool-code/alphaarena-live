@@ -2,7 +2,7 @@
 
 ## 1. 创建数据库表
 
-访问你的Supabase项目：https://kqalqqnuliuszwljfosz.supabase.co
+访问你的Supabase项目：https://app.supabase.com/project/your-project-id
 
 进入 **SQL Editor**，运行以下SQL文件的内容：
 
@@ -60,9 +60,10 @@ Supabase Database (持久化存储)
 
 确保 `.env.local` 包含：
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://kqalqqnuliuszwljfosz.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-SUPABASE_SERVICE_ROLE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+# ⚠️ 重要：从 Supabase 项目设置 → API 获取实际值
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
 ```
 
 ## 6. 测试步骤

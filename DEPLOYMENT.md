@@ -29,13 +29,15 @@ curl -X POST http://localhost:3003/api/sync
 
 ```env
 # Supabase配置
-NEXT_PUBLIC_SUPABASE_URL=https://kqalqqnuliuszwljfosz.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxYWxxcW51bGl1c3p3bGpmb3N6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwMDg4OTMsImV4cCI6MjA3NjU4NDg5M30.q0A3cQ0Jv9PIkIJLx-KQPso_EDD1I3ol-U6iZXer1_w
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxYWxxcW51bGl1c3p3bGpmb3N6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MTAwODg5MywiZXhwIjoyMDc2NTg0ODkzfQ.JRrYg1PRoTr262ZIwf9G3wsSF2WTT1MCVliQnQxtxms
+# ⚠️ 重要：从你的 Supabase项目设置 → API 中获取这些值
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
 
 # 数据库连接（Prisma使用，可选）
-DATABASE_URL=postgresql://postgres.kqalqqnuliuszwljfosz:runEASY@2014@aws-0-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true
-DIRECT_URL=postgresql://postgres.kqalqqnuliuszwljfosz:runEASY@2014@db.kqalqqnuliuszwljfosz.supabase.co:5432/postgres
+# ⚠️ 重要：从你的 Supabase项目设置 → Database → Connection string 获取
+DATABASE_URL=postgresql://postgres.your-project:your-password@aws-0-region.pooler.supabase.com:6543/postgres?pgbouncer=true
+DIRECT_URL=postgresql://postgres.your-project:your-password@db.your-project.supabase.co:5432/postgres
 
 # Google Analytics
 NEXT_PUBLIC_GA_ID=G-8Y9WJBQSR3
