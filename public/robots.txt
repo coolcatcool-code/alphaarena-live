@@ -1,0 +1,10 @@
+# Allow all search engines to crawl the site
+User-agent: *
+Allow: /
+
+# Disallow API routes (they're not useful for search engines)
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://alphaarena-live.com/sitemap.xml
+Sitemap: https://www.alphaarena-live.com/sitemap.xml
