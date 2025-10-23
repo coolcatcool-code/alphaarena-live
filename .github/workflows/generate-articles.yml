@@ -12,6 +12,10 @@ jobs:
   generate-and-publish:
     runs-on: ubuntu-latest
 
+    # 给GitHub Actions写权限
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
