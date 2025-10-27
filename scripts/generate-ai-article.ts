@@ -274,7 +274,7 @@ async function generateAIStrategyAnalysis() {
       : 0
 
     const totalPnL = aiTrades.reduce((sum, t) => sum + t.pnl, 0)
-    const symbols = [...new Set(aiTrades.map(t => t.symbol))]
+    const symbols = Array.from(new Set(aiTrades.map(t => t.symbol)))
 
     return {
       name: ai.name,

@@ -109,7 +109,7 @@ export async function fetchNof1Trades(): Promise<{ trades: Nof1Trade[] }> {
 // Transform nof1.ai data to our format
 export function transformLeaderboard(nof1Data: Nof1LeaderboardEntry[]) {
   // Sort by return_pct descending (highest return first)
-  const sorted = [...nof1Data].sort((a, b) => b.return_pct - a.return_pct)
+  const sorted = Array.from(nof1Data).sort((a, b) => b.return_pct - a.return_pct)
 
   return sorted.map((entry, index) => {
     const ourId = AI_MODEL_MAP[entry.id] || entry.id
@@ -156,7 +156,7 @@ export function transformPositions(nof1Data: Nof1Position[]) {
 
 export function transformTrades(nof1Data: Nof1Trade[], limit = 50) {
   // Sort by exit_time descending to get latest trades first
-  const sorted = [...nof1Data].sort((a, b) => b.exit_time - a.exit_time)
+  const sorted = Array.from(nof1Data).sort((a, b) => b.exit_time - a.exit_time)
 
   return sorted.slice(0, limit).map((trade) => {
     const ourId = AI_MODEL_MAP[trade.model_id] || trade.model_id
