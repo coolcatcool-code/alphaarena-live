@@ -43,3 +43,31 @@ next-env.d.ts
 .supabase
 
 .vercel
+
+# Documentation files (excluded from version control)
+# Keep README.md and article content
+*-SETUP.md
+*-SUMMARY.md
+*-STRATEGY.md
+*-PLAN.md
+*-GUIDE.md
+*-CHECKLIST.md
+DEPLOYMENT*.md
+INTEGRATION*.md
+FINAL*.md
+NEXT-STEPS.md
+QUICK-START.md
+VERCEL*.md
+ADVANCED*.md
+AUTO*.md
+CRON*.md
+SUPABASE*.md
+OPENROUTER*.md
+SEO*.md
+ARTICLE*.md
+SECURITY*.md
+alpha-arena-prd.md
+
+# SQL files (excluded from version control)
+*.sql
+!prisma/schema.prisma
