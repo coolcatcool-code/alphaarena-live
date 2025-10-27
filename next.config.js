@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['alphaarena-live.com'],
+    domains: ['www.alphaarena-live.com', 'alphaarena-live.com'],
     formats: ['image/avif', 'image/webp']
   },
 }

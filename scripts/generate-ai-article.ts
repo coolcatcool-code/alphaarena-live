@@ -22,7 +22,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY || '',
   baseURL: 'https://openrouter.ai/api/v1',
   defaultHeaders: {
-    'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'https://alphaarena-live.com',
+    'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'https://www.alphaarena-live.com',
     'X-Title': 'Alpha Arena Live'
   }
 })

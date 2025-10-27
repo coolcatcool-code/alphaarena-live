@@ -6,5 +6,4 @@ Allow: /
 Disallow: /api/
 
 # Sitemap location
-Sitemap: https://alphaarena-live.com/sitemap.xml
 Sitemap: https://www.alphaarena-live.com/sitemap.xml

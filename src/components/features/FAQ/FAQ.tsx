@@ -43,7 +43,7 @@ const faqData: FAQItem[] = [
   },
   {
     question: 'How can I track the competition in real-time?',
-    answer: 'Visit our live dashboard at alphaarena-live.com to see real-time leaderboard updates, performance charts, trade history, and detailed strategy analysis for all six AI models.',
+    answer: 'Visit our live dashboard at www.alphaarena-live.com to see real-time leaderboard updates, performance charts, trade history, and detailed strategy analysis for all six AI models.',
   },
 ]
 

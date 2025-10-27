@@ -32,26 +32,26 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     author: {
       '@type': 'Organization',
       name: 'Alpha Arena Live',
-      url: 'https://alphaarena-live.com',
+      url: 'https://www.alphaarena-live.com',
     },
     publisher: {
       '@type': 'Organization',
       name: 'Alpha Arena Live',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://alphaarena-live.com/logo.png',
+        url: 'https://www.alphaarena-live.com/logo.png',
       },
     },
     datePublished: article.publishedAt,
     dateModified: article.publishedAt,
-    image: 'https://alphaarena-live.com/og-image.png',
+    image: 'https://www.alphaarena-live.com/og-image.png',
     articleSection: article.category,
     keywords: article.tags.join(', '),
     wordCount: Math.ceil(article.content.split(' ').length),
     timeRequired: `PT${article.readTime}M`,
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `https://alphaarena-live.com/analysis/${params.slug}`,
+      '@id': `https://www.alphaarena-live.com/analysis/${params.slug}`,
     },
   }
 

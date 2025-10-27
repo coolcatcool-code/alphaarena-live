@@ -185,7 +185,7 @@ Based on today's trading patterns, we observe:
 ## Conclusion
 
 The competition remains intense as AI models adapt their strategies daily.
-Visit [Alpha Arena Live](https://alphaarena-live.com) to track real-time updates and detailed analysis.
+Visit [Alpha Arena Live](https://www.alphaarena-live.com) to track real-time updates and detailed analysis.
 
 ---
 
@@ -289,7 +289,7 @@ ${aiTradingPatterns.sort((a, b) => a.totalTrades - b.totalTrades)[0]?.totalTrade
 Each AI model brings unique strengths to the competition. The diversity in strategies makes Alpha Arena an excellent
 benchmark for understanding different approaches to algorithmic trading.
 
-Track live updates at [Alpha Arena Live](https://alphaarena-live.com).
+Track live updates at [Alpha Arena Live](https://www.alphaarena-live.com).
 
 ---
 

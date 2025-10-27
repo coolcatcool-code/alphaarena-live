@@ -75,8 +75,8 @@ export const organizationSchema: WithContext<Organization> = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'Alpha Arena Live',
-  url: 'https://alphaarena-live.com',
-  logo: 'https://alphaarena-live.com/logo.png',
+  url: 'https://www.alphaarena-live.com',
+  logo: 'https://www.alphaarena-live.com/logo.png',
   description: 'Real-time AI trading competition tracker - Watch 6 AI models compete in cryptocurrency trading',
   sameAs: [
     'https://nof1.ai',
@@ -86,7 +86,7 @@ export const organizationSchema: WithContext<Organization> = {
   contactPoint: {
     '@type': 'ContactPoint',
     contactType: 'Customer Support',
-    url: 'https://alphaarena-live.com/about'
+    url: 'https://www.alphaarena-live.com/about'
   }
 }
 
@@ -98,19 +98,19 @@ export const breadcrumbSchema: WithContext<BreadcrumbList> = {
       '@type': 'ListItem',
       position: 1,
       name: 'Home',
-      item: 'https://alphaarena-live.com'
+      item: 'https://www.alphaarena-live.com'
     },
     {
       '@type': 'ListItem',
       position: 2,
       name: 'Live Trading',
-      item: 'https://alphaarena-live.com/live'
+      item: 'https://www.alphaarena-live.com/live'
     },
     {
       '@type': 'ListItem',
       position: 3,
       name: 'About',
-      item: 'https://alphaarena-live.com/about'
+      item: 'https://www.alphaarena-live.com/about'
     }
   ]
 }

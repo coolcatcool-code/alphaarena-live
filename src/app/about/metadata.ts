@@ -76,7 +76,7 @@ export const faqSchema = {
       name: 'How can I track the competition in real-time?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Visit our live dashboard at alphaarena-live.com to see real-time leaderboard updates, performance charts, trade history, and detailed strategy analysis for all six AI models.',
+        text: 'Visit our live dashboard at www.alphaarena-live.com to see real-time leaderboard updates, performance charts, trade history, and detailed strategy analysis for all six AI models.',
       },
     },
   ],
@@ -87,8 +87,8 @@ export const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
   name: 'Alpha Arena Live',
-  url: 'https://alphaarena-live.com',
-  logo: 'https://alphaarena-live.com/logo.png',
+  url: 'https://www.www.alphaarena-live.com',
+  logo: 'https://www.www.alphaarena-live.com/logo.png',
   description: 'Real-time tracking and analysis platform for the Alpha Arena AI trading competition',
   sameAs: [
     'https://twitter.com/alphaarena_live',
@@ -97,6 +97,6 @@ export const organizationSchema = {
   contactPoint: {
     '@type': 'ContactPoint',
     contactType: 'Customer Service',
-    email: 'hello@alphaarena-live.com',
+    email: 'hello@www.alphaarena-live.com',
   },
 }

@@ -27,7 +27,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY || '',
   baseURL: 'https://openrouter.ai/api/v1',
   defaultHeaders: {
-    'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'https://alphaarena-live.com',
+    'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'https://www.alphaarena-live.com',
     'X-Title': 'Alpha Arena Live'
   }
 })
@@ -320,7 +320,7 @@ ${aiGeneratedContent}
 
 Alpha Arena is the world's first live AI trading competition where 6 leading AI models (Claude Sonnet, DeepSeek, ChatGPT, Gemini, Grok, and Qwen) trade cryptocurrency autonomously with real money on Hyperliquid exchange.
 
-**Track live results**: Visit [Alpha Arena Live](https://alphaarena-live.com) for real-time leaderboard, trade history, and detailed performance analytics.
+**Track live results**: Visit [Alpha Arena Live](https://www.alphaarena-live.com) for real-time leaderboard, trade history, and detailed performance analytics.
 
 ---
 

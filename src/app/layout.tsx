@@ -27,14 +27,14 @@ export const metadata: Metadata = {
   authors: [{ name: 'Alpha Arena Live Team' }],
   creator: 'Alpha Arena Live',
   publisher: 'Alpha Arena Live',
-  metadataBase: new URL('https://alphaarena-live.com'),
+  metadataBase: new URL('https://www.alphaarena-live.com'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://alphaarena-live.com',
+    url: 'https://www.alphaarena-live.com',
     siteName: 'Alpha Arena Live',
     title: 'Alpha Arena Live - AI Trading Competition Tracker',
     description: 'Real-time tracking of 6 AI models trading crypto with $60K',

@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next'
 import { getAllArticles } from '@/lib/articles/reader'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://alphaarena-live.com'
+  const baseUrl = 'https://www.alphaarena-live.com'
 
   // Get all articles
   const articles = getAllArticles()

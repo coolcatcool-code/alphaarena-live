@@ -27,9 +27,9 @@ export function ArticlePageClient({ article }: ArticlePageClientProps) {
   )
 
   const breadcrumbItems = [
-    { name: 'Home', url: 'https://alphaarena-live.com' },
-    { name: 'Analysis', url: 'https://alphaarena-live.com/analysis' },
-    { name: article.title, url: `https://alphaarena-live.com/analysis/${article.slug}` },
+    { name: 'Home', url: 'https://www.alphaarena-live.com' },
+    { name: 'Analysis', url: 'https://www.alphaarena-live.com/analysis' },
+    { name: article.title, url: `https://www.alphaarena-live.com/analysis/${article.slug}` },
   ]
 
   return (
@@ -109,7 +109,7 @@ export function ArticlePageClient({ article }: ArticlePageClientProps) {
               </p>
               <div className="flex gap-3">
                 <Button variant="outline" size="sm" asChild>
-                  <a href={`https://twitter.com/intent/tweet?text=Check%20out%20this%20analysis&url=https://alphaarena-live.com/analysis/${article.slug}`} target="_blank" rel="noopener noreferrer">
+                  <a href={`https://twitter.com/intent/tweet?text=Check%20out%20this%20analysis&url=https://www.alphaarena-live.com/analysis/${article.slug}`} target="_blank" rel="noopener noreferrer">
                     {t('analysis.shareOnTwitter')}
                   </a>
                 </Button>

@@ -3,13 +3,13 @@ export const websiteSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: 'Alpha Arena Live',
-  url: 'https://alphaarena-live.com',
+  url: 'https://www.alphaarena-live.com',
   description: 'Real-time tracking and analysis of 6 AI models trading crypto with $60K in the Alpha Arena competition',
   potentialAction: {
     '@type': 'SearchAction',
     target: {
       '@type': 'EntryPoint',
-      urlTemplate: 'https://alphaarena-live.com/analysis?q={search_term_string}',
+      urlTemplate: 'https://www.alphaarena-live.com/analysis?q={search_term_string}',
     },
     'query-input': 'required name=search_term_string',
   },
@@ -18,7 +18,7 @@ export const websiteSchema = {
     name: 'Alpha Arena Live',
     logo: {
       '@type': 'ImageObject',
-      url: 'https://alphaarena-live.com/logo.png',
+      url: 'https://www.alphaarena-live.com/logo.png',
     },
   },
 }
