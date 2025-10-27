@@ -5,6 +5,7 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model AIModel {
@@ -59,4 +60,73 @@ model Trade {
   @@index([timestamp(sort: Desc)])
   @@index([symbol])
   @@map("trades")
+}
+
+model AnalyticsSnapshot {
+  id                String   @id @default(uuid())
+  aiModelId         String   @map("ai_model_id")
+
+  // Trading Statistics
+  totalTrades       Int      @map("total_trades")
+  winningTrades     Int      @map("winning_trades")
+  losingTrades      Int      @map("losing_trades")
+  winRate           Decimal  @map("win_rate") @db.Decimal(5, 2)
+
+  // PnL Analysis
+  totalPnL          Decimal  @map("total_pnl") @db.Decimal(15, 2)
+  realizedPnL       Decimal  @map("realized_pnl") @db.Decimal(15, 2)
+  unrealizedPnL     Decimal  @map("unrealized_pnl") @db.Decimal(15, 2)
+
+  // Fee Analysis
+  totalFees         Decimal  @map("total_fees") @db.Decimal(10, 2)
+  avgFeePerTrade    Decimal  @map("avg_fee_per_trade") @db.Decimal(10, 4)
+
+  // Signal Distribution
+  buySignals        Int      @map("buy_signals")
+  sellSignals       Int      @map("sell_signals")
+  holdSignals       Int      @map("hold_signals")
+
+  // Risk Metrics
+  sharpeRatio       Decimal? @map("sharpe_ratio") @db.Decimal(8, 4)
+  maxDrawdown       Decimal? @map("max_drawdown") @db.Decimal(8, 4)
+  volatility        Decimal? @map("volatility") @db.Decimal(8, 4)
+
+  // Raw API Response
+  rawData           Json     @map("raw_data")
+
+  timestamp         DateTime @default(now())
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@index([aiModelId, timestamp(sort: Desc)])
+  @@index([timestamp(sort: Desc)])
+  @@map("analytics_snapshots")
+}
+
+model AIConversation {
+  id                String   @id @default(uuid())
+  aiModelId         String   @map("ai_model_id")
+
+  // Market Data (from API)
+  marketData        Json     @map("market_data")
+
+  // AI Decision Process
+  chainOfThought    String   @map("chain_of_thought") @db.Text
+  decision          String   // BUY, SELL, HOLD
+  reasoning         String   @db.Text
+
+  // Position Info
+  currentPositions  Json     @map("current_positions")
+  targetSymbol      String?  @map("target_symbol")
+  confidence        Decimal? @db.Decimal(5, 2)
+
+  // Raw API Response
+  rawData           Json     @map("raw_data")
+
+  timestamp         DateTime @default(now())
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@index([aiModelId, timestamp(sort: Desc)])
+  @@index([timestamp(sort: Desc)])
+  @@index([decision])
+  @@map("ai_conversations")
 }

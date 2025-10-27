@@ -38,7 +38,18 @@
       "Bash(if exist .next\\cache rd /s /q .next\\cache)",
       "Bash(pnpm generate-articles:*)",
       "Bash(git pull:*)",
-      "Bash(pnpm generate-seo-article:*)"
+      "Bash(pnpm generate-seo-article:*)",
+      "Bash(pnpm generate-ai-articles:*)",
+      "Bash(pnpm prisma migrate dev:*)",
+      "Bash(tsx --check:*)",
+      "Bash(pnpm tsc:*)",
+      "Bash(pnpm sync-advanced-data:*)",
+      "Bash(del scriptssync-advanced-data.ts)",
+      "Bash(ren scriptssync-advanced-data-v2.ts sync-advanced-data.ts)",
+      "Bash(tsx test:*)",
+      "Bash(cd:*)",
+      "Bash(pnpm exec tsx:*)",
+      "Bash(if exist C:UsersZerotraealphaarenaQUICK-START.md del C:UsersZerotraealphaarenaQUICK-START.md)"
     ],
     "deny": [],
     "ask": []

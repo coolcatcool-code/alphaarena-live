@@ -12,7 +12,8 @@
     "postinstall": "prisma generate",
     "generate-articles": "tsx scripts/generate-article.ts",
     "generate-ai-articles": "tsx scripts/generate-ai-article.ts",
-    "generate-seo-article": "tsx scripts/generate-seo-article.ts"
+    "generate-seo-article": "tsx scripts/generate-seo-article.ts",
+    "sync-advanced-data": "tsx scripts/sync-advanced-data.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.17.1",
