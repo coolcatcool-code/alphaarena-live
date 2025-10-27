@@ -113,7 +113,7 @@ async function generateDailySummary() {
   }, {} as Record<string, number>) || {}
 
   const mostActive = Object.entries(tradesByAI)
-    .sort(([,a], [,b]) => b - a)[0]
+    .sort(([,a], [,b]) => (b as number) - (a as number))[0]
 
   const aiModelMap = aiModels?.reduce((acc, ai) => {
     acc[ai.id] = ai
