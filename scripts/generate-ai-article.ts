@@ -217,6 +217,7 @@ IMPORTANT: Return ONLY the markdown content without the YAML frontmatter. Start 
   const aiGeneratedContent = completion.choices[0].message.content || ''
 
   // 添加frontmatter（兼容网站格式）
+  const topPerformer = sortedAIs[0]
   const excerpt = `Daily performance analysis of ${sortedAIs.length} AI trading models. ${aiModelMap[topPerformer.ai_model_id]?.name} leads with ${topPerformer.current_pnl >= 0 ? '+' : ''}${topPerformer.current_pnl.toFixed(2)}% returns.`
 
   const article = `---
