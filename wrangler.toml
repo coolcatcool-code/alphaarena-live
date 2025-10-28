@@ -5,11 +5,8 @@ workers_dev = true
 # Use the OpenNext Cloudflare worker output
 main = ".worker-next/index.mjs"
 
-# Required for Next.js SSR
+# Required for Next.js SSR and Node.js APIs (Prisma, Supabase, etc.)
 compatibility_flags = ["nodejs_compat"]
-
-# Node.js compatibility mode for Prisma and other Node.js APIs
-node_compat = true
 
 # Limits
 limits = { cpu_ms = 50000 }
