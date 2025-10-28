@@ -1,12 +1,17 @@
 name = "alphaarena-live"
-compatibility_date = "2024-01-01"
+compatibility_date = "2024-09-23"
 workers_dev = true
 
-# Use the OpenNext Cloudflare worker output
-main = ".worker-next/index.mjs"
+# OpenNext Cloudflare worker output
+main = ".open-next/worker.js"
 
 # Required for Next.js SSR and Node.js APIs (Prisma, Supabase, etc.)
 compatibility_flags = ["nodejs_compat"]
+
+# Static assets
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
 
 # Limits
 limits = { cpu_ms = 50000 }
