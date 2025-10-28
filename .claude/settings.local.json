@@ -58,7 +58,8 @@
       "Bash(node scripts/clean-cache.js:*)",
       "Bash(NEXT_DISABLE_CACHE=1 pnpm build:*)",
       "Bash(pnpm workers:build:*)",
-      "Bash(npx @opennextjs/cloudflare build)"
+      "Bash(npx @opennextjs/cloudflare build)",
+      "Bash(tsx scripts/generate-articles-data.ts:*)"
     ],
     "deny": [],
     "ask": []

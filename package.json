@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "tsx scripts/generate-articles-data.ts",
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
@@ -13,11 +14,12 @@
     "generate-articles": "tsx scripts/generate-article.ts",
     "generate-ai-articles": "tsx scripts/generate-ai-article.ts",
     "generate-seo-article": "tsx scripts/generate-seo-article.ts",
+    "generate-articles-data": "tsx scripts/generate-articles-data.ts",
     "sync-advanced-data": "tsx scripts/sync-advanced-data.ts",
     "pages:build": "prisma generate && next build",
     "pages:dev": "next dev",
     "pages:deploy": "echo 'Please deploy via Cloudflare Dashboard (Git integration)'",
-    "workers:build": "prisma generate && next build && npx @opennextjs/cloudflare build",
+    "workers:build": "prisma generate && tsx scripts/generate-articles-data.ts && next build && npx @opennextjs/cloudflare build",
     "workers:deploy": "pnpm workers:build && wrangler deploy",
     "workers:dev": "wrangler dev",
     "wrangler": "wrangler"
