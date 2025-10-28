@@ -17,17 +17,21 @@ binding = "ASSETS"
 limits = { cpu_ms = 50000 }
 
 # Environment variables
-# Note: These will be overridden by GitHub Actions secrets during deployment
 [vars]
 NODE_ENV = "production"
 NEXT_PUBLIC_APP_URL = "https://www.alphaarena-live.com"
-NEXT_PUBLIC_SUPABASE_URL = ""
-NEXT_PUBLIC_SUPABASE_ANON_KEY = ""
 
-# Sensitive secrets (will be set via wrangler secret put):
-# SUPABASE_SERVICE_ROLE_KEY
-# OPENROUTER_API_KEY
-# CRON_SECRET
+# Note: NEXT_PUBLIC_* variables are public and safe to commit
+# Add your Supabase public values here:
+# NEXT_PUBLIC_SUPABASE_URL = "your_supabase_url"
+# NEXT_PUBLIC_SUPABASE_ANON_KEY = "your_anon_key"
+
+# Sensitive secrets (already set via wrangler secret put):
+# - SUPABASE_SERVICE_ROLE_KEY
+# - OPENROUTER_API_KEY
+# - CRON_SECRET
+# - NEXT_PUBLIC_SUPABASE_URL (set as secret for now)
+# - NEXT_PUBLIC_SUPABASE_ANON_KEY (set as secret for now)
 
 # Cron triggers for data synchronization
 [triggers]
