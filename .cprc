@@ -1,0 +1,9 @@
+{
+  "$schema": "https://developers.cloudflare.com/pages/platform/build-configuration/",
+  "version": 1,
+  "build": {
+    "command": "pnpm build",
+    "output_directory": ".next",
+    "install_command": "pnpm install"
+  }
+}
