@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'edge' // Cloudflare Workers compatible
+// Note: removed 'edge' runtime as it's incompatible with Prisma/Supabase
+// Cloudflare Pages will handle this as a serverless function
 
 // Supabase setup
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!

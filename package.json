@@ -14,9 +14,9 @@
     "generate-ai-articles": "tsx scripts/generate-ai-article.ts",
     "generate-seo-article": "tsx scripts/generate-seo-article.ts",
     "sync-advanced-data": "tsx scripts/sync-advanced-data.ts",
-    "pages:build": "prisma generate && npx @cloudflare/next-on-pages",
-    "pages:dev": "npx @cloudflare/next-on-pages --experimental-minify",
-    "pages:deploy": "pnpm pages:build && wrangler pages deploy .vercel/output/static",
+    "pages:build": "prisma generate && next build",
+    "pages:dev": "next dev",
+    "pages:deploy": "echo 'Please deploy via Cloudflare Dashboard (Git integration)'",
     "wrangler": "wrangler"
   },
   "dependencies": {
@@ -54,7 +54,6 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
-    "@cloudflare/next-on-pages": "^1.13.16",
     "@types/cheerio": "^1.0.0",
     "@types/node": "^22",
     "@types/react": "^18",

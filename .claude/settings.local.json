@@ -52,7 +52,8 @@
       "Bash(if exist C:UsersZerotraealphaarenaQUICK-START.md del C:UsersZerotraealphaarenaQUICK-START.md)",
       "Bash(git rm:*)",
       "Bash(pnpm list:*)",
-      "Bash(pnpm update:*)"
+      "Bash(pnpm update:*)",
+      "Bash(pnpm pages:build:*)"
     ],
     "deny": [],
     "ask": []
