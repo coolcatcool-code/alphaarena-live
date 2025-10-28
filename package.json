@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build && node scripts/clean-cache.js",
+    "build": "prisma generate && next build && rm -rf .next/cache || true",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
