@@ -59,7 +59,8 @@
       "Bash(NEXT_DISABLE_CACHE=1 pnpm build:*)",
       "Bash(pnpm workers:build:*)",
       "Bash(npx @opennextjs/cloudflare build)",
-      "Bash(tsx scripts/generate-articles-data.ts:*)"
+      "Bash(tsx scripts/generate-articles-data.ts:*)",
+      "Bash(pnpm generate-articles-data:*)"
     ],
     "deny": [],
     "ask": []

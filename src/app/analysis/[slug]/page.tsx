@@ -9,10 +9,14 @@ interface ArticlePageProps {
   }
 }
 
+// Generate static paths for all articles at build time
 export async function generateStaticParams() {
   const slugs = getAllSlugs()
   return slugs.map(slug => ({ slug }))
 }
+
+// Disable dynamic params - only allow pre-generated pages
+export const dynamicParams = false
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   const article = getArticleBySlug(params.slug)
