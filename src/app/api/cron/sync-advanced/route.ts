@@ -1,19 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 export const dynamic = 'force-dynamic'
 // Note: removed 'edge' runtime as it's incompatible with Prisma/Supabase
 // Cloudflare Pages will handle this as a serverless function
 
-// Supabase setup
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-const supabase = createClient(supabaseUrl, supabaseKey)
-
 // API endpoints
 const ANALYTICS_API = 'https://nof1.ai/api/analytics'
 const CONVERSATIONS_API = 'https://nof1.ai/api/conversations'
 const API_TIMEOUT = 60000 // 60 seconds
+
+/**
+ * Initialize Supabase client (runtime only)
+ */
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Missing Supabase environment variables')
+  }
+
+  return createClient(supabaseUrl, supabaseKey)
+}
 
 // Types
 interface AnalyticsAPIResponse {
@@ -69,7 +78,7 @@ async function fetchData<T>(url: string, name: string): Promise<T> {
 /**
  * Get AI model ID mapping
  */
-async function getAIModelIdMap(): Promise<Map<string, string>> {
+async function getAIModelIdMap(supabase: SupabaseClient): Promise<Map<string, string>> {
   const { data, error } = await supabase
     .from('ai_models')
     .select('id, name')
@@ -116,6 +125,7 @@ async function getAIModelIdMap(): Promise<Map<string, string>> {
  * Sync analytics data
  */
 async function syncAnalytics(
+  supabase: SupabaseClient,
   analyticsData: AnalyticsAPIResponse,
   modelIdMap: Map<string, string>
 ) {
@@ -191,8 +201,11 @@ export async function GET(request: NextRequest) {
     console.log('🚀 Starting advanced data sync (cron job)...')
     const startTime = Date.now()
 
+    // Initialize Supabase client (runtime only)
+    const supabase = getSupabaseClient()
+
     // Get AI model mapping
-    const modelIdMap = await getAIModelIdMap()
+    const modelIdMap = await getAIModelIdMap(supabase)
     console.log(`📋 Loaded ${modelIdMap.size} model mappings`)
 
     // Fetch analytics data
@@ -209,7 +222,7 @@ export async function GET(request: NextRequest) {
     // Sync analytics
     let analyticsResult = { synced: 0, skipped: 0 }
     if (analyticsData) {
-      analyticsResult = await syncAnalytics(analyticsData, modelIdMap)
+      analyticsResult = await syncAnalytics(supabase, analyticsData, modelIdMap)
     }
 
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(2)
