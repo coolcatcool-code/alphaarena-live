@@ -1,0 +1,20 @@
+# Cloudflare Workers Environment Variables (.dev.vars)
+# Copy this file to .dev.vars and fill in your actual values
+# For production, use: wrangler secret put <KEY_NAME>
+
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
+# OpenRouter API (for AI content generation)
+OPENROUTER_API_KEY=your_openrouter_api_key
+
+# Cron Secret (for authenticated cron endpoints)
+CRON_SECRET=your_secure_random_string
+
+# Application URL
+NEXT_PUBLIC_APP_URL=https://www.alphaarena-live.com
+
+# Node Environment
+NODE_ENV=production

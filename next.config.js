@@ -1,11 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  output: 'standalone', // Required for OpenNext Cloudflare
   images: {
     domains: ['www.alphaarena-live.com', 'alphaarena-live.com'],
     formats: ['image/avif', 'image/webp']
   },
-  // Cloudflare Pages compatibility
+  // Cloudflare Workers compatibility
   eslint: {
     ignoreDuringBuilds: true,
   },

@@ -53,7 +53,12 @@
       "Bash(git rm:*)",
       "Bash(pnpm list:*)",
       "Bash(pnpm update:*)",
-      "Bash(pnpm pages:build:*)"
+      "Bash(pnpm pages:build:*)",
+      "Bash(if exist .nextcache rd /s /q .nextcache)",
+      "Bash(node scripts/clean-cache.js:*)",
+      "Bash(NEXT_DISABLE_CACHE=1 pnpm build:*)",
+      "Bash(pnpm workers:build:*)",
+      "Bash(npx @opennextjs/cloudflare build)"
     ],
     "deny": [],
     "ask": []

@@ -1,0 +1,41 @@
+name = "alphaarena-live"
+compatibility_date = "2024-01-01"
+workers_dev = true
+
+# Use the OpenNext Cloudflare worker output
+main = ".open-next/worker.js"
+
+# Asset serving from .open-next/assets
+assets = { directory = ".open-next/assets", binding = "ASSETS" }
+
+# Environment variables
+[env.production]
+name = "alphaarena-live-production"
+routes = [
+  { pattern = "www.alphaarena-live.com/*", zone_name = "alphaarena-live.com" }
+]
+
+# Required for Next.js SSR
+compatibility_flags = ["nodejs_compat"]
+
+# Node.js compatibility mode for Prisma and other Node.js APIs
+node_compat = true
+
+# Limits
+limits = { cpu_ms = 50000 }
+
+# Environment variables (secrets should be set via `wrangler secret put`)
+[vars]
+NODE_ENV = "production"
+NEXT_PUBLIC_APP_URL = "https://www.alphaarena-live.com"
+
+# Secrets to be set via CLI:
+# wrangler secret put NEXT_PUBLIC_SUPABASE_URL
+# wrangler secret put NEXT_PUBLIC_SUPABASE_ANON_KEY
+# wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+# wrangler secret put OPENROUTER_API_KEY
+# wrangler secret put CRON_SECRET
+
+# Cron triggers for data synchronization
+[triggers]
+crons = ["*/5 * * * *"]  # Every 5 minutes for sync-advanced endpoint
