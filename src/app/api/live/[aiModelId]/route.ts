@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     const { aiModelId } = await params
-    const supabase = await createClient()
+    const supabase = createClient()
 
     // Get AI model
     const { data: aiModel, error: aiError } = await supabase

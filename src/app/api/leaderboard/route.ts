@@ -6,7 +6,7 @@ export const revalidate = 0 // 不缓存，始终读取最新数据
 
 export async function GET() {
   try {
-    const supabase = await createClient()
+    const supabase = createClient()
 
     // 从Supabase读取snapshots和AI models
     const { data: snapshots, error: snapshotsError } = await supabase
