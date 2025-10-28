@@ -4,6 +4,7 @@ import './globals.css'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics'
+import { GoogleAdSense } from '@/components/analytics/GoogleAdSense'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -79,6 +80,7 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={inter.className}>
         <GoogleAnalytics />
+        <GoogleAdSense />
         <div className="flex min-h-screen flex-col">
           <Header />
           <main className="flex-1">
