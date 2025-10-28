@@ -1,0 +1,19 @@
+# Cloudflare Pages ignore file
+# Excludes files from deployment to avoid size limits
+
+# Next.js cache (too large for Cloudflare Pages)
+.next/cache/
+
+# Webpack cache
+.next/cache/webpack/
+
+# Build cache
+.next/cache/images/
+
+# Static optimization info
+.next/cache/fetch-cache/
+
+# Trace files
+.next/trace
+
+# Only deploy essential files for production
