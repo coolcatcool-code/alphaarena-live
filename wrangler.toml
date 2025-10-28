@@ -33,6 +33,15 @@ NEXT_PUBLIC_APP_URL = "https://www.alphaarena-live.com"
 # - NEXT_PUBLIC_SUPABASE_URL (set as secret for now)
 # - NEXT_PUBLIC_SUPABASE_ANON_KEY (set as secret for now)
 
+# Cloudflare D1 Database binding
+# 1. 创建D1数据库: wrangler d1 create alphaarena-db
+# 2. 复制输出的database_id并替换下面的your-database-id
+# 3. 执行Schema: wrangler d1 execute alphaarena-db --file=./migrations/d1-schema.sql
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "alphaarena-db"
+# database_id = "your-database-id"  # 替换为实际的database_id
+
 # Cron triggers for data synchronization
 [triggers]
-crons = ["*/5 * * * *"]  # Every 5 minutes for sync-advanced endpoint
+crons = ["*/5 * * * *"]  # Every 5 minutes: sync real-time data
