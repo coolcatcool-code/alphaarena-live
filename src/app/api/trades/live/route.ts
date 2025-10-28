@@ -6,7 +6,7 @@ export const revalidate = 0
 
 export async function GET() {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const { data: trades, error } = await supabase
       .from('trades')

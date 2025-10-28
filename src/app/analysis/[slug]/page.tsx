@@ -4,9 +4,9 @@ import { ArticlePageClient } from './ArticlePageClient'
 import type { Metadata } from 'next'
 
 interface ArticlePageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
 export async function generateStaticParams() {
@@ -15,7 +15,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
-  const article = getArticleBySlug(params.slug)
+  const { slug } = await params
+  const article = getArticleBySlug(slug)
 
   if (!article) {
     return {
@@ -51,7 +52,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     timeRequired: `PT${article.readTime}M`,
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `https://www.alphaarena-live.com/analysis/${params.slug}`,
+      '@id': `https://www.alphaarena-live.com/analysis/${slug}`,
     },
   }
 
@@ -77,8 +78,9 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   }
 }
 
-export default function ArticlePage({ params }: ArticlePageProps) {
-  const article = getArticleBySlug(params.slug)
+export default async function ArticlePage({ params }: ArticlePageProps) {
+  const { slug } = await params
+  const article = getArticleBySlug(slug)
 
   if (!article) {
     notFound()

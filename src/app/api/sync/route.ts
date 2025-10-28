@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 
 export async function POST() {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     // Test Supabase connection first
     const { error: connectionError } = await supabase
@@ -186,7 +186,7 @@ export async function POST() {
 // GET endpoint to check sync status
 export async function GET() {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const [
       { count: snapshotsCount },

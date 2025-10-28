@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import * as https from 'https'
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 300 // 5 minutes max execution time
+export const runtime = 'edge' // Cloudflare Workers compatible
 
 // Supabase setup
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -30,54 +29,40 @@ interface AnalyticsAPIResponse {
 }
 
 /**
- * Fetch data using native Node.js https
+ * Fetch data using Web API fetch (Cloudflare Workers compatible)
  */
 async function fetchData<T>(url: string, name: string): Promise<T> {
-  return new Promise((resolve, reject) => {
-    const startTime = Date.now()
+  const startTime = Date.now()
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT)
 
-    const req = https.get(url, {
+  try {
+    const response = await fetch(url, {
       headers: {
         'User-Agent': 'AlphaArena-Cron/1.0',
         'Accept': 'application/json'
       },
-      timeout: API_TIMEOUT
-    }, (res) => {
-      let data = ''
-
-      if (res.statusCode !== 200) {
-        reject(new Error(`HTTP ${res.statusCode}: ${res.statusMessage}`))
-        return
-      }
-
-      res.on('data', (chunk) => {
-        data += chunk
-      })
-
-      res.on('end', () => {
-        const elapsed = ((Date.now() - startTime) / 1000).toFixed(2)
-        console.log(`✅ Fetched ${name} in ${elapsed}s`)
-        try {
-          resolve(JSON.parse(data) as T)
-        } catch (error) {
-          reject(new Error(`Failed to parse JSON: ${error}`))
-        }
-      })
-
-      res.on('error', (error) => {
-        reject(error)
-      })
+      signal: controller.signal
     })
 
-    req.on('error', (error) => {
-      reject(error)
-    })
+    clearTimeout(timeoutId)
 
-    req.on('timeout', () => {
-      req.destroy()
-      reject(new Error('Request timed out'))
-    })
-  })
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+    }
+
+    const data = await response.json() as T
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(2)
+    console.log(`✅ Fetched ${name} in ${elapsed}s`)
+
+    return data
+  } catch (error) {
+    clearTimeout(timeoutId)
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Request timed out')
+    }
+    throw error
+  }
 }
 
 /**

@@ -49,7 +49,10 @@
       "Bash(tsx test:*)",
       "Bash(cd:*)",
       "Bash(pnpm exec tsx:*)",
-      "Bash(if exist C:UsersZerotraealphaarenaQUICK-START.md del C:UsersZerotraealphaarenaQUICK-START.md)"
+      "Bash(if exist C:UsersZerotraealphaarenaQUICK-START.md del C:UsersZerotraealphaarenaQUICK-START.md)",
+      "Bash(git rm:*)",
+      "Bash(pnpm list:*)",
+      "Bash(pnpm update:*)"
     ],
     "deny": [],
     "ask": []
