@@ -3,17 +3,7 @@ compatibility_date = "2024-01-01"
 workers_dev = true
 
 # Use the OpenNext Cloudflare worker output
-main = ".open-next/worker.js"
-
-# Asset serving from .open-next/assets
-assets = { directory = ".open-next/assets", binding = "ASSETS" }
-
-# Environment variables
-[env.production]
-name = "alphaarena-live-production"
-routes = [
-  { pattern = "www.alphaarena-live.com/*", zone_name = "alphaarena-live.com" }
-]
+main = ".worker-next/index.mjs"
 
 # Required for Next.js SSR
 compatibility_flags = ["nodejs_compat"]
@@ -24,17 +14,18 @@ node_compat = true
 # Limits
 limits = { cpu_ms = 50000 }
 
-# Environment variables (secrets should be set via `wrangler secret put`)
+# Environment variables
+# Note: These will be overridden by GitHub Actions secrets during deployment
 [vars]
 NODE_ENV = "production"
 NEXT_PUBLIC_APP_URL = "https://www.alphaarena-live.com"
+NEXT_PUBLIC_SUPABASE_URL = ""
+NEXT_PUBLIC_SUPABASE_ANON_KEY = ""
 
-# Secrets to be set via CLI:
-# wrangler secret put NEXT_PUBLIC_SUPABASE_URL
-# wrangler secret put NEXT_PUBLIC_SUPABASE_ANON_KEY
-# wrangler secret put SUPABASE_SERVICE_ROLE_KEY
-# wrangler secret put OPENROUTER_API_KEY
-# wrangler secret put CRON_SECRET
+# Sensitive secrets (will be set via wrangler secret put):
+# SUPABASE_SERVICE_ROLE_KEY
+# OPENROUTER_API_KEY
+# CRON_SECRET
 
 # Cron triggers for data synchronization
 [triggers]
