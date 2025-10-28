@@ -14,9 +14,20 @@ const nextConfig = {
   },
   // Optimize for Cloudflare Pages (25 MiB file size limit)
   webpack: (config, { isServer }) => {
-    // Disable webpack cache to avoid large cache files
+    // Completely disable webpack cache to avoid large cache files
     config.cache = false
+
+    // Also disable filesystem cache
+    if (config.cache && typeof config.cache === 'object') {
+      config.cache.type = 'memory'
+    }
+
     return config
+  },
+  // Disable all caching mechanisms
+  generateBuildId: async () => {
+    // Use timestamp to ensure fresh builds
+    return `build-${Date.now()}`
   },
   // Reduce build output size
   experimental: {
