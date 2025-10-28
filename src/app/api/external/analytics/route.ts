@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { AnalyticsResponse } from '@/types'
 
+export const dynamic = 'force-dynamic' // Don't pre-render at build time
 export const revalidate = 180 // 缓存3分钟 (API每3分钟更新一次)
 
 /**
