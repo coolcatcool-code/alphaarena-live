@@ -81,9 +81,9 @@ export default function ModelDetailPage() {
           fetch(`/api/trades/complete?model_id=${modelId}&limit=10&sort_by=entry_time&sort_order=DESC`)
         ])
 
-        const leaderboardData = await leaderboardRes.json()
-        const analyticsData = await analyticsRes.json()
-        const tradesData = await tradesRes.json()
+        const leaderboardData = await leaderboardRes.json() as { data?: any[] }
+        const analyticsData = await analyticsRes.json() as { data?: any }
+        const tradesData = await tradesRes.json() as { data?: any[] }
 
         // Find this model in leaderboard
         const modelLeaderboard = leaderboardData.data?.find((m: any) => m.aiModelId === modelId)

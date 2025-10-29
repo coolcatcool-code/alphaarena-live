@@ -164,7 +164,7 @@ export default function ModelWalletsPage() {
           try {
             const res = await fetch(`/api/analytics/${model.id}`)
             if (!res.ok) return null
-            const data = await res.json()
+            const data = await res.json() as { data?: any }
 
             return {
               modelId: model.id,
@@ -187,7 +187,7 @@ export default function ModelWalletsPage() {
           try {
             const res = await fetch(`/api/trades/complete?model_id=${model.id}&limit=3&sort_by=entry_time&sort_order=DESC`)
             if (!res.ok) return null
-            const data = await res.json()
+            const data = await res.json() as { data?: any[] }
 
             return {
               modelId: model.id,

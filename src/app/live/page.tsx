@@ -72,7 +72,7 @@ export default function LivePage() {
       const leaderboardData = await leaderboardRes.json() as LeaderboardResponse
       const positionsData = await positionsRes.json() as PositionsResponse
       const tradesData = await tradesRes.json() as TradesResponse
-      const cryptoPrices = await cryptoPricesRes.json()
+      const cryptoPrices = await cryptoPricesRes.json() as { data?: any[]; source?: string }
 
       setLeaderboard(leaderboardData.data)
       setPositions(positionsData.data)

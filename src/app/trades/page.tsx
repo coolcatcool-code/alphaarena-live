@@ -96,7 +96,7 @@ export default function TradingHistoryPage() {
       if (selectedSide) params.append('side', selectedSide)
 
       const res = await fetch(`/api/trades/complete?${params}`)
-      const data = await res.json()
+      const data = await res.json() as { data?: any[]; pagination?: any }
 
       setTrades(data.data || [])
       setPagination(data.pagination || pagination)
