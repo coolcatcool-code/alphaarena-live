@@ -16,7 +16,7 @@ export function HomePageClient() {
     async function fetchData() {
       try {
         const res = await fetch('/api/leaderboard')
-        const data = await res.json()
+        const data = await res.json() as LeaderboardResponse
         setLeaderboardData(data)
       } catch (error) {
         console.error('Error fetching leaderboard:', error)

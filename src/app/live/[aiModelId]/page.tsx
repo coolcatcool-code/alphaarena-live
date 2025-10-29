@@ -22,7 +22,7 @@ export default function AIDetailPage() {
     try {
       const res = await fetch(`/api/live/${aiModelId}`)
       if (!res.ok) throw new Error('Failed to fetch')
-      const result = await res.json()
+      const result = await res.json() as AIDetailResponse
       setData(result)
       setLastUpdate(new Date())
       setLoading(false)

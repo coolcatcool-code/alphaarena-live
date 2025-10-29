@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { LiveIndicator } from '@/components/features/Live/LiveIndicator'
 import { ArrowUpRight, ArrowDownRight, TrendingUp, TrendingDown } from 'lucide-react'
-import type { AISnapshot, Position, Trade, LeaderboardResponse } from '@/types'
+import type { AISnapshot, Position, Trade, LeaderboardResponse, PositionsResponse, TradesResponse } from '@/types'
 
 export default function LivePage() {
   const [leaderboard, setLeaderboard] = useState<AISnapshot[]>([])
@@ -24,9 +24,9 @@ export default function LivePage() {
         fetch('/api/trades/live'),
       ])
 
-      const leaderboardData: LeaderboardResponse = await leaderboardRes.json()
-      const positionsData = await positionsRes.json()
-      const tradesData = await tradesRes.json()
+      const leaderboardData = await leaderboardRes.json() as LeaderboardResponse
+      const positionsData = await positionsRes.json() as PositionsResponse
+      const tradesData = await tradesRes.json() as TradesResponse
 
       setLeaderboard(leaderboardData.data)
       setPositions(positionsData.data)

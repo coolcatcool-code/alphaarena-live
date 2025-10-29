@@ -66,7 +66,7 @@ export async function fetchNof1Leaderboard(): Promise<{ leaderboard: Nof1Leaderb
     const errorText = await response.text()
     throw new Error(`Failed to fetch leaderboard: ${response.status} - ${errorText}`)
   }
-  return response.json()
+  return response.json() as Promise<{ leaderboard: Nof1LeaderboardEntry[] }>
 }
 
 export async function fetchNof1Positions(): Promise<{ positions: Nof1Position[] }> {
@@ -79,7 +79,7 @@ export async function fetchNof1Positions(): Promise<{ positions: Nof1Position[] 
 
   // Handle deprecated API - it returns 410 but with valid JSON
   if (response.status === 410) {
-    const data = await response.json()
+    const data = await response.json() as { message: string }
     console.log('Positions API deprecated:', data.message)
     // Return empty positions array as indicated by the API
     return { positions: [] }
@@ -89,7 +89,7 @@ export async function fetchNof1Positions(): Promise<{ positions: Nof1Position[] 
     const errorText = await response.text()
     throw new Error(`Failed to fetch positions: ${response.status} - ${errorText}`)
   }
-  return response.json()
+  return response.json() as Promise<{ positions: Nof1Position[] }>
 }
 
 export async function fetchNof1Trades(): Promise<{ trades: Nof1Trade[] }> {
@@ -103,7 +103,7 @@ export async function fetchNof1Trades(): Promise<{ trades: Nof1Trade[] }> {
     const errorText = await response.text()
     throw new Error(`Failed to fetch trades: ${response.status} - ${errorText}`)
   }
-  return response.json()
+  return response.json() as Promise<{ trades: Nof1Trade[] }>
 }
 
 // Transform nof1.ai data to our format
