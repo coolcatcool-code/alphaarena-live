@@ -1,0 +1,43 @@
+name: Sync Data Every 5 Minutes
+
+on:
+  schedule:
+    # Runs every 5 minutes
+    - cron: '*/5 * * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Trigger Data Synchronization
+        run: |
+          echo "Starting data sync at $(date)"
+
+          response=$(curl -X GET \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -w "\n%{http_code}" \
+            -s \
+            https://alphaarena-live.pages.dev/api/cron/sync-all)
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n -1)
+
+          echo "HTTP Status: $http_code"
+          echo "Response: $body"
+
+          if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+            echo "✅ Data sync completed successfully"
+          else
+            echo "❌ Data sync failed with status $http_code"
+            exit 1
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### Data Sync Result" >> $GITHUB_STEP_SUMMARY
+          echo "Timestamp: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "Endpoint: https://alphaarena-live.pages.dev/api/cron/sync-all" >> $GITHUB_STEP_SUMMARY
