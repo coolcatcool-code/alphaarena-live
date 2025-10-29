@@ -72,6 +72,8 @@ jobs:
           echo "Checking .open-next output..."
           ls -la .open-next/
         env:
+          WRANGLER_BUILD_CONDITIONS: ""
+          WRANGLER_BUILD_PLATFORM: "node"
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
