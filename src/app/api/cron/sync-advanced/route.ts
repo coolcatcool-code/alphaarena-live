@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
+// Explicitly use Node.js runtime (not edge) for OpenNext compatibility
+export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
-// Note: removed 'edge' runtime as it's incompatible with Prisma/Supabase
-// Cloudflare Pages will handle this as a serverless function
 
 // API endpoints
 const ANALYTICS_API = 'https://nof1.ai/api/analytics'

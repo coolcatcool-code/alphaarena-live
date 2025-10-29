@@ -10,7 +10,8 @@ import type {
   NOF1CryptoPricesResponse,
 } from '@/types'
 
-export const runtime = 'edge'
+// Explicitly use Node.js runtime (not edge) for OpenNext compatibility
+export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 // API端点配置
