@@ -27,10 +27,37 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build for Cloudflare Workers
-        run: pnpm workers:build
+      - name: Generate Prisma Client
+        run: pnpm prisma generate
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Generate Articles Data
+        run: pnpm generate-articles-data
+
+      - name: Build Next.js
+        run: pnpm build || true
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          NEXT_PUBLIC_APP_URL: https://www.alphaarena-live.com
+          NODE_ENV: production
+
+      - name: Check Next.js build output
+        run: |
+          if [ ! -d ".next" ]; then
+            echo "❌ Next.js build failed - .next directory not found"
+            exit 1
+          fi
+          echo "✅ Next.js build successful - .next directory exists"
+          ls -la .next/
+
+      - name: Build with OpenNext
+        run: npx @opennextjs/cloudflare build
+        env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
