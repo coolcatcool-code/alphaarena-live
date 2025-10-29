@@ -58,7 +58,6 @@ jobs:
         run: pnpm generate-ai-articles
 
       - name: Generate SEO-optimized article
-        if: ${{ secrets.OPENROUTER_API_KEY != '' }}
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
