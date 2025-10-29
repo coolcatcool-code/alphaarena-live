@@ -56,7 +56,21 @@ jobs:
           ls -la .next/
 
       - name: Build with OpenNext
-        run: npx @opennextjs/cloudflare build
+        run: |
+          echo "🔨 Building with OpenNext..."
+          npx @opennextjs/cloudflare build || {
+            echo "❌ OpenNext build failed!"
+            echo "Checking .next directory..."
+            ls -la .next/
+            echo "Checking .next/standalone..."
+            ls -la .next/standalone/ || echo "standalone directory missing"
+            echo "Checking package.json..."
+            cat package.json | grep -A 5 "dependencies"
+            exit 1
+          }
+          echo "✅ OpenNext build successful"
+          echo "Checking .open-next output..."
+          ls -la .open-next/
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
