@@ -73,7 +73,18 @@ SEO*.md
 ARTICLE*.md
 SECURITY*.md
 alpha-arena-prd.md
+CLOUDFLARE*.md
+setup-*.md
+商业化*.md
+免费*.md
+*.实施方案.md
+*.采集方案.md
 
 # SQL files (excluded from version control)
 *.sql
 !prisma/schema.prisma
+!migrations/d1-schema.sql
+
+# Logs
+deploy.log
+*.log
