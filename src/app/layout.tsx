@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics'
 import { GoogleAdSense } from '@/components/analytics/GoogleAdSense'
+import { Toaster } from 'sonner'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -88,6 +89,7 @@ export default function RootLayout({
           </main>
           <Footer />
         </div>
+        <Toaster theme="dark" />
       </body>
     </html>
   )

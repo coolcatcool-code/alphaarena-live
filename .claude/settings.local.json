@@ -60,7 +60,22 @@
       "Bash(pnpm workers:build:*)",
       "Bash(npx @opennextjs/cloudflare build)",
       "Bash(tsx scripts/generate-articles-data.ts:*)",
-      "Bash(pnpm generate-articles-data:*)"
+      "Bash(pnpm generate-articles-data:*)",
+      "Bash(npx wrangler:*)",
+      "Bash(timeout /t 45 /nobreak)",
+      "Bash(pnpm workers:deploy:*)",
+      "Bash(tee:*)",
+      "Bash(dir .open-next)",
+      "Bash(gh run view:*)",
+      "Bash(cat:*)",
+      "WebFetch(domain:opennext.js.org)",
+      "Bash(for file in \"C:\\Users\\Zero\\trae\\alphaarena\\src\\app\\api\\cron\\sync-advanced\\route.ts\" \"C:\\Users\\Zero\\trae\\alphaarena\\src\\app\\api\\sync\\route.ts\")",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(head:*)",
+      "Bash(pnpm wrangler d1 execute:*)",
+      "Bash(openssl rand:*)",
+      "Bash(tsx scripts/check-d1-data.ts:*)",
+      "Bash(gh workflow run:*)"
     ],
     "deny": [],
     "ask": []

@@ -19,19 +19,7 @@ import {
   BarChart
 } from 'lucide-react'
 import { toast } from 'sonner'
-
-interface AIModel {
-  id: string
-  name: string
-  walletAddress: string
-  network: string
-  description: string
-  useCase: string
-  status: 'active' | 'inactive' | 'maintenance'
-  lastUpdated: string
-  explorerUrl: string
-  color: string
-}
+import type { LeaderboardResponse } from '@/types'
 
 interface ModelAnalytics {
   totalTrades: number
@@ -50,80 +38,99 @@ interface RecentTrade {
   entryTime: number
 }
 
-const aiModels: AIModel[] = [
-  {
-    id: 'gpt-5',
+interface ModelMetadata {
+  name: string
+  walletAddress: string
+  network: string
+  description: string
+  useCase: string
+  status: 'active' | 'inactive' | 'maintenance'
+  explorerUrl: string
+  color: string
+}
+
+interface ModelCard {
+  id: string
+  name: string
+  walletAddress: string
+  network: string
+  description: string
+  useCase: string
+  status: 'active' | 'inactive' | 'maintenance'
+  explorerUrl: string
+  color: string
+  leaderboard?: {
+    rank: number
+    currentPnL: number
+    totalAssets: number
+    winRate: number
+    openPositions: number
+    timestamp: string
+  }
+}
+
+const MODEL_METADATA: Record<string, ModelMetadata> = {
+  'gpt-5': {
     name: 'GPT-5',
     walletAddress: '0x67293d914eafb26878534571add81f6bd2d9fe06',
     network: 'Hyperliquid',
     description: 'Advanced language model with superior reasoning capabilities',
     useCase: 'Complex trading strategies and market analysis',
     status: 'active',
-    lastUpdated: '2024-10-29T10:30:00Z',
     explorerUrl: 'https://coinglass.com/hyperliquid/',
     color: '#10B981'
   },
-  {
-    id: 'claude-sonnet-4-5',
+  'claude-sonnet-4-5': {
     name: 'Claude Sonnet 4.5',
     walletAddress: '0x59fa085d106541a834017b97060bcbbb0aa82869',
     network: 'Hyperliquid',
-    description: 'Anthropic\'s most capable model for nuanced understanding',
+    description: "Anthropic's most capable model for nuanced understanding",
     useCase: 'Risk assessment and portfolio optimization',
     status: 'active',
-    lastUpdated: '2024-10-29T10:25:00Z',
     explorerUrl: 'https://coinglass.com/hyperliquid/',
     color: '#8B5CF6'
   },
-  {
-    id: 'gemini-2-5-pro',
+  'gemini-2.5-pro': {
     name: 'Gemini 2.5 Pro',
     walletAddress: '0x1b7a7d099a670256207a30dd0ae13d35f278010f',
     network: 'Hyperliquid',
-    description: 'Google\'s multimodal AI with advanced reasoning',
+    description: "Google's multimodal AI with advanced reasoning",
     useCase: 'Multi-asset trading and cross-market analysis',
     status: 'active',
-    lastUpdated: '2024-10-29T10:20:00Z',
     explorerUrl: 'https://coinglass.com/hyperliquid/',
     color: '#F59E0B'
   },
-  {
-    id: 'grok-4',
+  'grok-4': {
     name: 'Grok-4',
     walletAddress: '0x56d652e62998251b56c8398fb11fcfe464c08f84',
     network: 'Hyperliquid',
-    description: 'xAI\'s advanced model with real-time information processing',
+    description: "xAI's advanced model with real-time information processing",
     useCase: 'Real-time market analysis and news-driven trading',
     status: 'active',
-    lastUpdated: '2024-10-29T10:18:00Z',
     explorerUrl: 'https://coinglass.com/hyperliquid/',
     color: '#FF6B6B'
   },
-  {
-    id: 'deepseek-chat-v3-1',
+  'deepseek-chat-v3.1': {
     name: 'DeepSeek Chat v3.1',
     walletAddress: '0xc20ac4dc4188660cbf555448af52694ca62b0734',
     network: 'Hyperliquid',
     description: 'High-performance model optimized for financial analysis',
     useCase: 'Algorithmic trading and market prediction',
     status: 'active',
-    lastUpdated: '2024-10-29T10:15:00Z',
     explorerUrl: 'https://coinglass.com/hyperliquid/',
     color: '#EF4444'
   },
-  {
-    id: 'qwen3-max',
+  'qwen3-max': {
     name: 'Qwen3 Max',
     walletAddress: '0x7a8fd8bba33e37361ca6b0cb4518a44681bad2f3',
     network: 'Hyperliquid',
-    description: 'Alibaba\'s flagship model with exceptional performance',
+    description: "Alibaba's flagship model with exceptional performance",
     useCase: 'High-frequency trading and arbitrage strategies',
     status: 'active',
-    lastUpdated: '2024-10-29T09:45:00Z',
     explorerUrl: 'https://coinglass.com/hyperliquid/',
     color: '#06B6D4'
   }
-]
+}
 
 const faqs = [
   {
@@ -152,6 +159,7 @@ export default function ModelWalletsPage() {
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null)
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null)
   const [showQR, setShowQR] = useState<string | null>(null)
+  const [models, setModels] = useState<ModelCard[]>([])
   const [modelAnalytics, setModelAnalytics] = useState<Record<string, ModelAnalytics>>({})
   const [modelTrades, setModelTrades] = useState<Record<string, RecentTrade[]>>({})
   const [loading, setLoading] = useState(true)
@@ -159,75 +167,121 @@ export default function ModelWalletsPage() {
   useEffect(() => {
     const fetchModelData = async () => {
       try {
-        // Fetch analytics for all models
-        const analyticsPromises = aiModels.map(async (model) => {
-          try {
-            const res = await fetch(`/api/analytics/${model.id}`)
-            if (!res.ok) return null
-            const data = await res.json() as { data?: any }
+        const leaderboardRes = await fetch('/api/leaderboard')
+        const leaderboardData = await leaderboardRes.json() as LeaderboardResponse
 
-            return {
-              modelId: model.id,
-              analytics: {
-                totalTrades: data.data?.trading?.totalTrades || 0,
-                winRate: (data.data?.winRate?.overall || 0) * 100,
-                avgPnl: data.data?.pnl?.avgNet || 0,
-                sharpeRatio: data.data?.risk?.sharpeRatio || 0,
-                bestTrade: data.data?.pnl?.biggestGain || 0,
-                worstTrade: data.data?.pnl?.biggestLoss || 0,
-              }
+        const leaderboardModels: ModelCard[] = leaderboardData.data.map(entry => {
+          const metadata = MODEL_METADATA[entry.aiModelId] ?? {
+            name: entry.aiModel?.name || entry.aiModelId,
+            walletAddress: 'N/A',
+            network: 'Hyperliquid',
+            description: entry.aiModel?.description || 'AI trading model',
+            useCase: 'Autonomous trading',
+            status: 'active' as const,
+            explorerUrl: 'https://coinglass.com/hyperliquid/',
+            color: entry.aiModel?.color || '#4B5563'
+          }
+
+          return {
+            id: entry.aiModelId,
+            name: entry.aiModel?.name || metadata.name,
+            walletAddress: metadata.walletAddress,
+            network: metadata.network,
+            description: metadata.description,
+            useCase: metadata.useCase,
+            status: metadata.status,
+            explorerUrl: metadata.explorerUrl,
+            color: entry.aiModel?.color || metadata.color,
+            leaderboard: {
+              rank: entry.rank,
+              currentPnL: entry.currentPnL,
+              totalAssets: entry.totalAssets,
+              winRate: entry.winRate,
+              openPositions: entry.openPositions || 0,
+              timestamp: new Date(entry.timestamp).toISOString()
             }
-          } catch (e) {
-            return null
           }
         })
 
-        // Fetch recent trades for all models
-        const tradesPromises = aiModels.map(async (model) => {
-          try {
-            const res = await fetch(`/api/trades/complete?model_id=${model.id}&limit=3&sort_by=entry_time&sort_order=DESC`)
-            if (!res.ok) return null
-            const data = await res.json() as { data?: any[] }
-
-            return {
-              modelId: model.id,
-              trades: (data.data || []).map((trade: any) => ({
-                id: trade.id,
-                symbol: trade.symbol,
-                side: trade.side,
-                pnl: trade.pnl?.realizedNet || 0,
-                entryTime: trade.entry?.time || 0,
-              }))
-            }
-          } catch (e) {
-            return null
+        const seen = new Set(leaderboardModels.map(model => model.id))
+        Object.entries(MODEL_METADATA).forEach(([id, metadata]) => {
+          if (!seen.has(id)) {
+            leaderboardModels.push({
+              id,
+              name: metadata.name,
+              walletAddress: metadata.walletAddress,
+              network: metadata.network,
+              description: metadata.description,
+              useCase: metadata.useCase,
+              status: metadata.status,
+              explorerUrl: metadata.explorerUrl,
+              color: metadata.color
+            })
           }
         })
 
-        const analyticsResults = await Promise.all(analyticsPromises)
-        const tradesResults = await Promise.all(tradesPromises)
+        setModels(leaderboardModels)
 
-        // Process analytics results
+        const enrichmentResults = await Promise.all(
+          leaderboardModels.map(async model => {
+            try {
+              const [analyticsRes, tradesRes] = await Promise.all([
+                fetch(`/api/analytics/${model.id}`),
+                fetch(`/api/trades/complete?model_id=${model.id}&limit=3&sort_by=entry_time&sort_order=DESC`)
+              ])
+
+              const analyticsJson = analyticsRes.ok
+                ? await analyticsRes.json().catch(() => null)
+                : null
+              const tradesJson = tradesRes.ok
+                ? await tradesRes.json().catch(() => null)
+                : null
+
+              const analytics: ModelAnalytics | undefined = analyticsJson?.data
+                ? {
+                    totalTrades: analyticsJson.data.trading?.totalTrades || 0,
+                    winRate: (analyticsJson.data.winRate?.overall || 0) * 100,
+                    avgPnl: analyticsJson.data.pnl?.avgNet || 0,
+                    sharpeRatio: analyticsJson.data.risk?.sharpeRatio || 0,
+                    bestTrade: analyticsJson.data.pnl?.biggestGain || 0,
+                    worstTrade: analyticsJson.data.pnl?.biggestLoss || 0
+                  }
+                : undefined
+
+              const trades: RecentTrade[] = Array.isArray(tradesJson?.data)
+                ? tradesJson.data.map((trade: any) => ({
+                    id: trade.id,
+                    symbol: trade.symbol,
+                    side: trade.side,
+                    pnl: trade.pnl?.realizedNet ?? trade.pnl ?? 0,
+                    entryTime: trade.entry?.time || trade.entryTime || 0
+                  }))
+                : []
+
+              return { modelId: model.id, analytics, trades }
+            } catch (error) {
+              console.warn(`Failed to enrich model ${model.id}:`, error)
+              return { modelId: model.id, analytics: undefined, trades: [] }
+            }
+          })
+        )
+
         const analyticsMap: Record<string, ModelAnalytics> = {}
-        analyticsResults.forEach((result) => {
-          if (result) {
+        const tradesMap: Record<string, RecentTrade[]> = {}
+
+        enrichmentResults.forEach(result => {
+          if (result.analytics) {
             analyticsMap[result.modelId] = result.analytics
           }
+          tradesMap[result.modelId] = result.trades
         })
+
         setModelAnalytics(analyticsMap)
-
-        // Process trades results
-        const tradesMap: Record<string, RecentTrade[]> = {}
-        tradesResults.forEach((result) => {
-          if (result) {
-            tradesMap[result.modelId] = result.trades
-          }
-        })
         setModelTrades(tradesMap)
-
-        setLoading(false)
       } catch (error) {
         console.error('Error fetching model data:', error)
+        toast.error('Failed to load live analytics. Displaying wallet metadata only.')
+      } finally {
         setLoading(false)
       }
     }
@@ -276,7 +330,8 @@ export default function ModelWalletsPage() {
     return `${address.slice(0, 6)}...${address.slice(-4)}`
   }
 
-  const formatTime = (timestamp: string) => {
+  const formatTime = (timestamp?: string) => {
+    if (!timestamp) return 'N/A'
     return new Date(timestamp).toLocaleString()
   }
 
@@ -309,10 +364,23 @@ export default function ModelWalletsPage() {
           </div>
         </div>
 
+        {!loading && models.length === 0 && (
+          <Card className="p-6 mb-12 text-center border-dark-border bg-dark-card">
+            <p className="text-text-secondary">
+              Wallet metadata is unavailable at the moment. Please check back shortly once the sync completes.
+            </p>
+          </Card>
+        )}
+
         {/* Model Cards Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {aiModels.map((model) => (
-            <Card key={model.id} className="p-6 hover:shadow-lg transition-all duration-300 bg-dark-card border-dark-border">
+          {models.map((model) => {
+            const analytics = modelAnalytics[model.id]
+            const trades = modelTrades[model.id] ?? []
+            const leaderboard = model.leaderboard
+
+            return (
+              <Card key={model.id} className="p-6 hover:shadow-lg transition-all duration-300 bg-dark-card border-dark-border">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center">
                   <div 
@@ -372,12 +440,43 @@ export default function ModelWalletsPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-text-secondary">Last Updated:</span>
-                  <span className="text-white">{formatTime(model.lastUpdated)}</span>
+                  <span className="text-white">{formatTime(leaderboard?.timestamp)}</span>
                 </div>
               </div>
 
+              {leaderboard && (
+                <div className="mt-4 pt-4 border-t border-dark-border">
+                  <h4 className="text-sm font-semibold text-white mb-3 flex items-center">
+                    <Activity className="mr-2 h-4 w-4 text-brand-blue" />
+                    Latest Snapshot
+                  </h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-dark-bg/30 rounded p-2">
+                      <div className="text-xs text-text-secondary">Rank</div>
+                      <div className="text-lg font-bold text-white">#{leaderboard.rank}</div>
+                    </div>
+                    <div className="bg-dark-bg/30 rounded p-2">
+                      <div className="text-xs text-text-secondary">Total Assets</div>
+                      <div className="text-lg font-bold text-white">
+                        ${leaderboard.totalAssets.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                      </div>
+                    </div>
+                    <div className="bg-dark-bg/30 rounded p-2">
+                      <div className="text-xs text-text-secondary">Return</div>
+                      <div className={`text-lg font-bold ${leaderboard.currentPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {leaderboard.currentPnL >= 0 ? '+' : ''}{leaderboard.currentPnL.toFixed(2)}%
+                      </div>
+                    </div>
+                    <div className="bg-dark-bg/30 rounded p-2">
+                      <div className="text-xs text-text-secondary">Win Rate</div>
+                      <div className="text-lg font-bold text-purple-400">{leaderboard.winRate.toFixed(1)}%</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Performance Metrics */}
-              {modelAnalytics[model.id] && (
+              {analytics && (
                 <div className="mt-4 pt-4 border-t border-dark-border">
                   <h4 className="text-sm font-semibold text-white mb-3 flex items-center">
                     <BarChart className="mr-2 h-4 w-4 text-brand-blue" />
@@ -386,35 +485,35 @@ export default function ModelWalletsPage() {
                   <div className="grid grid-cols-2 gap-3">
                     <div className="bg-dark-bg/30 rounded p-2">
                       <div className="text-xs text-text-secondary">Total Trades</div>
-                      <div className="text-lg font-bold text-white">{modelAnalytics[model.id].totalTrades}</div>
+                      <div className="text-lg font-bold text-white">{analytics.totalTrades}</div>
                     </div>
                     <div className="bg-dark-bg/30 rounded p-2">
                       <div className="text-xs text-text-secondary">Win Rate</div>
-                      <div className="text-lg font-bold text-green-400">{modelAnalytics[model.id].winRate.toFixed(1)}%</div>
+                      <div className="text-lg font-bold text-green-400">{analytics.winRate.toFixed(1)}%</div>
                     </div>
                     <div className="bg-dark-bg/30 rounded p-2">
                       <div className="text-xs text-text-secondary">Avg P&L</div>
-                      <div className={`text-lg font-bold ${modelAnalytics[model.id].avgPnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        ${modelAnalytics[model.id].avgPnl.toFixed(2)}
+                      <div className={`text-lg font-bold ${analytics.avgPnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        ${analytics.avgPnl.toFixed(2)}
                       </div>
                     </div>
                     <div className="bg-dark-bg/30 rounded p-2">
                       <div className="text-xs text-text-secondary">Sharpe Ratio</div>
-                      <div className="text-lg font-bold text-purple-400">{modelAnalytics[model.id].sharpeRatio.toFixed(2)}</div>
+                      <div className="text-lg font-bold text-purple-400">{analytics.sharpeRatio.toFixed(2)}</div>
                     </div>
                   </div>
                 </div>
               )}
 
               {/* Recent Trades */}
-              {modelTrades[model.id] && modelTrades[model.id].length > 0 && (
+              {trades.length > 0 && (
                 <div className="mt-4 pt-4 border-t border-dark-border">
                   <h4 className="text-sm font-semibold text-white mb-3 flex items-center">
                     <Activity className="mr-2 h-4 w-4 text-brand-blue" />
                     Recent Trades
                   </h4>
                   <div className="space-y-2">
-                    {modelTrades[model.id].map((trade) => (
+                    {trades.map((trade) => (
                       <div key={trade.id} className="flex justify-between items-center bg-dark-bg/30 rounded p-2">
                         <div className="flex items-center gap-2">
                           <Badge variant={trade.side === 'long' ? 'default' : 'secondary'} className="text-xs">
@@ -473,13 +572,13 @@ export default function ModelWalletsPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
           <Card className="p-4 text-center">
             <div className="text-2xl font-bold text-green-400 mb-1">
-              {aiModels.filter(m => m.status === 'active').length}
+              {models.filter(m => m.status === 'active').length}
             </div>
             <div className="text-sm text-text-secondary">Active Models</div>
           </Card>
           <Card className="p-4 text-center">
             <div className="text-2xl font-bold text-blue-400 mb-1">
-              {aiModels.length}
+              {models.length}
             </div>
             <div className="text-sm text-text-secondary">Total Models</div>
           </Card>

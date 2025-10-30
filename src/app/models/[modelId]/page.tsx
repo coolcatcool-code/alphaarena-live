@@ -19,11 +19,44 @@ import {
   ChevronLeft,
   ExternalLink
 } from 'lucide-react'
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts'
+
+interface ModelHistory {
+  rankingHistory: Array<{
+    timestamp: number
+    date: string
+    rank: number
+    equity: number
+    returnPct: number
+  }>
+  dailySnapshots: Array<{
+    date: string
+    tradesCount: number
+    totalPnl: number
+    equityEod: number
+    winRate: number
+  }>
+  equityCurve: Array<{
+    timestamp: number
+    date: string
+    totalEquity: number
+    realizedPnl: number
+    unrealizedPnl: number
+  }>
+  statistics: {
+    totalDataPoints: number
+    timeRange: { start: string; end: string; days: number }
+    startEquity: number
+    currentEquity: number
+    equityChange: number
+  }
+}
 
 interface ModelData {
   leaderboard: any
   analytics: any
   recentTrades: any[]
+  history: ModelHistory | null
   loading: boolean
 }
 
@@ -67,6 +100,7 @@ export default function ModelDetailPage() {
     leaderboard: null,
     analytics: null,
     recentTrades: [],
+    history: null,
     loading: true
   })
 
@@ -75,15 +109,17 @@ export default function ModelDetailPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [leaderboardRes, analyticsRes, tradesRes] = await Promise.all([
+        const [leaderboardRes, analyticsRes, tradesRes, historyRes] = await Promise.all([
           fetch('/api/leaderboard'),
           fetch(`/api/analytics/${modelId}`),
-          fetch(`/api/trades/complete?model_id=${modelId}&limit=10&sort_by=entry_time&sort_order=DESC`)
+          fetch(`/api/trades/complete?model_id=${modelId}&limit=10&sort_by=entry_time&sort_order=DESC`),
+          fetch(`/api/history/${modelId}?days=30`)
         ])
 
         const leaderboardData = await leaderboardRes.json() as { data?: any[] }
         const analyticsData = await analyticsRes.json() as { data?: any }
         const tradesData = await tradesRes.json() as { data?: any[] }
+        const historyData = await historyRes.json() as { data?: ModelHistory }
 
         // Find this model in leaderboard
         const modelLeaderboard = leaderboardData.data?.find((m: any) => m.aiModelId === modelId)
@@ -92,6 +128,7 @@ export default function ModelDetailPage() {
           leaderboard: modelLeaderboard,
           analytics: analyticsData.data,
           recentTrades: tradesData.data || [],
+          history: historyData.data || null,
           loading: false
         })
       } catch (error) {
@@ -298,6 +335,94 @@ export default function ModelDetailPage() {
           </Card>
         )}
 
+        {data.history && data.history.equityCurve?.length > 0 && (
+          <Card className="p-6 mb-8">
+            <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
+              <TrendingUp className="mr-3 h-6 w-6 text-brand-blue" />
+              Equity Performance (Last {data.history.statistics.timeRange.days} Days)
+            </h2>
+            <ResponsiveContainer width="100%" height={320}>
+              <AreaChart data={data.history.equityCurve}>
+                <defs>
+                  <linearGradient id="equityGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#38bdf8" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#1e40af" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <XAxis
+                  dataKey="date"
+                  minTickGap={32}
+                  tickFormatter={(value) => new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                  stroke="#64748b"
+                />
+                <YAxis
+                  stroke="#64748b"
+                  tickFormatter={(value) => `$${Math.round(value).toLocaleString()}`}
+                />
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#0F172A', borderColor: '#1E293B' }}
+                  formatter={(value: number) => [`$${value.toLocaleString()}`, 'Total Equity']}
+                  labelFormatter={(label) => new Date(label).toLocaleString()}
+                />
+                <Area type="monotone" dataKey="totalEquity" stroke="#38bdf8" fillOpacity={1} fill="url(#equityGradient)" />
+              </AreaChart>
+            </ResponsiveContainer>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+              <div className="bg-dark-bg/40 border border-dark-border rounded-lg p-4">
+                <div className="text-text-secondary text-sm">Starting Equity</div>
+                <div className="text-2xl font-bold text-white">${data.history.statistics.startEquity.toLocaleString()}</div>
+              </div>
+              <div className="bg-dark-bg/40 border border-dark-border rounded-lg p-4">
+                <div className="text-text-secondary text-sm">Current Equity</div>
+                <div className="text-2xl font-bold text-white">${data.history.statistics.currentEquity.toLocaleString()}</div>
+              </div>
+              <div className="bg-dark-bg/40 border border-dark-border rounded-lg p-4">
+                <div className="text-text-secondary text-sm">Change</div>
+                <div className={`text-2xl font-bold ${data.history.statistics.equityChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {data.history.statistics.equityChange >= 0 ? '+' : ''}${data.history.statistics.equityChange.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {data.history && data.history.rankingHistory?.length > 0 && (
+          <Card className="p-6 mb-8">
+            <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
+              <TrendingDown className="mr-3 h-6 w-6 text-brand-blue" />
+              Ranking Trend
+            </h2>
+            <ResponsiveContainer width="100%" height={260}>
+              <AreaChart data={data.history.rankingHistory}>
+                <defs>
+                  <linearGradient id="rankGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <XAxis
+                  dataKey="date"
+                  minTickGap={32}
+                  tickFormatter={(value) => new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                  stroke="#64748b"
+                />
+                <YAxis
+                  reversed
+                  allowDecimals={false}
+                  stroke="#64748b"
+                  tickFormatter={(value) => `#${value}`}
+                />
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#0F172A', borderColor: '#1E293B' }}
+                  formatter={(value: number) => [`#${value}`, 'Rank']}
+                  labelFormatter={(label) => new Date(label).toLocaleString()}
+                />
+                <Area type="monotone" dataKey="rank" stroke="#f97316" fillOpacity={1} fill="url(#rankGradient)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </Card>
+        )}
+
         {/* Recent Trades */}
         <Card className="p-6 mb-8">
           <div className="flex items-center justify-between mb-6">
@@ -329,7 +454,7 @@ export default function ModelDetailPage() {
                     </div>
                     <div className="text-sm text-text-secondary">
                       Entry: ${trade.entry.price.toFixed(2)}
-                      {trade.exit && ` → Exit: $${trade.exit.price.toFixed(2)}`}
+                      {trade.exit && ` | Exit: $${trade.exit.price.toFixed(2)}`}
                     </div>
                   </div>
                   <div className="flex items-center gap-4">

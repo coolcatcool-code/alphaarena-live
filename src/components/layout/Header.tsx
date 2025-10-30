@@ -37,6 +37,12 @@ export function Header() {
             LIVE
           </Link>
           <Link
+            href="/model-wallets"
+            className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"
+          >
+            Model Wallets
+          </Link>
+          <Link
             href="/analysis"
             className="text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"
           >

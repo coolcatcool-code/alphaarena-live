@@ -52,33 +52,7 @@ next-env.d.ts
 
 # Documentation files (excluded from version control)
 # Keep README.md and article content
-*-SETUP.md
-*-SUMMARY.md
-*-STRATEGY.md
-*-PLAN.md
-*-GUIDE.md
-*-CHECKLIST.md
-DEPLOYMENT*.md
-INTEGRATION*.md
-FINAL*.md
-NEXT-STEPS.md
-QUICK-START.md
-VERCEL*.md
-ADVANCED*.md
-AUTO*.md
-CRON*.md
-SUPABASE*.md
-OPENROUTER*.md
-SEO*.md
-ARTICLE*.md
-SECURITY*.md
-alpha-arena-prd.md
-CLOUDFLARE*.md
-setup-*.md
-商业化*.md
-免费*.md
-*.实施方案.md
-*.采集方案.md
+*.md
 
 # SQL files (excluded from version control)
 *.sql

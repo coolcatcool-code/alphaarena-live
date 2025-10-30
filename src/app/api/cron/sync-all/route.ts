@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import {
+  createClient as createSupabaseClient,
+  SupabaseClient
+} from '@supabase/supabase-js'
 import type {
   NOF1LeaderboardResponse,
   NOF1TradesResponse,
@@ -32,6 +35,21 @@ interface SyncResult {
   data?: any
   error?: string
   duration: number
+}
+
+function getSupabaseClient(request?: NextRequest): SupabaseClient {
+  const env = request ? ((request as any).env ?? undefined) : undefined
+
+  const supabaseUrl =
+    env?.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey =
+    env?.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Missing Supabase environment variables')
+  }
+
+  return createSupabaseClient(supabaseUrl, supabaseKey)
 }
 
 /**
@@ -74,10 +92,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // 2. 初始化Supabase客户端
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    const supabase = getSupabaseClient(request)
 
     // 3. 获取D1数据库（如果可用）
     // 在Cloudflare Workers环境中，D1通过env.DB绑定访问
@@ -135,7 +150,10 @@ export async function GET(request: NextRequest) {
 
     console.log('✅ Sync completed:', summary)
 
-    return NextResponse.json(summary)
+    return NextResponse.json({
+      summary,
+      results: syncResults
+    })
   } catch (error: any) {
     console.error('❌ Sync failed with critical error:', error)
 

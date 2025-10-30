@@ -27,10 +27,8 @@ import {
 import type { 
   AISnapshot, 
   Position, 
-  Trade, 
   LeaderboardResponse, 
-  PositionsResponse, 
-  TradesResponse 
+  PositionsResponse 
 } from '@/types'
 
 interface LiveStats {
@@ -49,10 +47,38 @@ interface MarketData {
   volume: number
 }
 
+interface RecentTrade {
+  id: string
+  modelId: string
+  symbol: string
+  side: string
+  pnl: number
+  entryPrice?: number
+  exitPrice?: number | null
+  entryTime: number
+}
+
+interface RecentTradesResponse {
+  data: Array<{
+    id: string
+    modelId: string
+    symbol: string
+    side: string
+    pnl?: number
+    realizedPnL?: number
+    entryPrice?: number
+    exitPrice?: number | null
+    entryTime: number
+    timestamp?: number
+  }>
+  total: number
+  timestamp: string
+}
+
 export default function LivePage() {
   const [leaderboard, setLeaderboard] = useState<AISnapshot[]>([])
   const [positions, setPositions] = useState<Position[]>([])
-  const [liveTrades, setLiveTrades] = useState<Trade[]>([])
+  const [liveTrades, setLiveTrades] = useState<RecentTrade[]>([])
   const [liveStats, setLiveStats] = useState<LiveStats | null>(null)
   const [marketData, setMarketData] = useState<MarketData[]>([])
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date())
@@ -65,18 +91,31 @@ export default function LivePage() {
       const [leaderboardRes, positionsRes, tradesRes, cryptoPricesRes] = await Promise.all([
         fetch('/api/leaderboard'),
         fetch('/api/positions'),
-        fetch('/api/trades/live'),
+        fetch('/api/trades/recent?limit=20'),
         fetch('/api/crypto/prices'),
       ])
 
       const leaderboardData = await leaderboardRes.json() as LeaderboardResponse
       const positionsData = await positionsRes.json() as PositionsResponse
-      const tradesData = await tradesRes.json() as TradesResponse
+      const tradesJson = await tradesRes.json() as RecentTradesResponse
       const cryptoPrices = await cryptoPricesRes.json() as { data?: any[]; source?: string }
+
+      const recentTrades: RecentTrade[] = Array.isArray(tradesJson.data)
+        ? tradesJson.data.map(trade => ({
+            id: trade.id,
+            modelId: trade.modelId,
+            symbol: trade.symbol,
+            side: trade.side,
+            pnl: trade.realizedPnL ?? trade.pnl ?? 0,
+            entryPrice: trade.entryPrice,
+            exitPrice: trade.exitPrice ?? null,
+            entryTime: trade.entryTime ?? trade.timestamp ?? 0
+          }))
+        : []
 
       setLeaderboard(leaderboardData.data)
       setPositions(positionsData.data)
-      setLiveTrades(tradesData.data)
+      setLiveTrades(recentTrades)
 
       // Calculate live stats
       const stats = calculateLiveStats(leaderboardData.data, positionsData.data)
@@ -106,21 +145,24 @@ export default function LivePage() {
         { symbol: 'SOL', price: 178.90, change24h: 4.56, volume: 2100000000 },
         { symbol: 'BNB', price: 612.34, change24h: 1.89, volume: 1800000000 },
       ])
+      setLiveTrades([])
     }
   }
 
   const calculateLiveStats = (leaderboard: AISnapshot[], positions: Position[]): LiveStats => {
     const totalUnrealizedPnL = positions.reduce((sum, pos) => sum + (pos.pnl || 0), 0)
     const totalRealizedPnL = leaderboard.reduce((sum, ai) => sum + (ai.currentPnL || 0), 0)
-    const mostActive = leaderboard.reduce((max, ai) => 
-      (ai.openPositions || 0) > (max.openPositions || 0) ? ai : max, leaderboard[0]
-    )
-    
-    const riskLevel = Math.abs(totalUnrealizedPnL) > 1000 ? 'high' : 
-                     Math.abs(totalUnrealizedPnL) > 500 ? 'medium' : 'low'
-    
-    const sentiment = totalUnrealizedPnL > 100 ? 'bullish' : 
-                     totalUnrealizedPnL < -100 ? 'bearish' : 'neutral'
+    const mostActive = leaderboard.length > 0
+      ? leaderboard.reduce((max, ai) =>
+          (ai.openPositions || 0) > (max.openPositions || 0) ? ai : max, leaderboard[0]
+        )
+      : undefined
+
+    const riskLevel = Math.abs(totalUnrealizedPnL) > 1000 ? 'high' :
+      Math.abs(totalUnrealizedPnL) > 500 ? 'medium' : 'low'
+
+    const sentiment = totalUnrealizedPnL > 100 ? 'bullish' :
+      totalUnrealizedPnL < -100 ? 'bearish' : 'neutral'
 
     return {
       totalActivePositions: positions.length,
@@ -415,47 +457,52 @@ export default function LivePage() {
           
           <Card className="p-6">
             <div className="space-y-4">
-              {filteredTrades.slice(0, 10).map((trade) => (
-                <div key={trade.id} className="flex items-center justify-between p-4 bg-dark-bg/30 rounded-lg">
-                  <div className="flex items-center gap-4">
-                    <div className="flex flex-col items-center">
-                      <Clock className="h-4 w-4 text-text-secondary mb-1" />
-                      <span className="text-xs text-text-secondary">
-                        {formatTime(trade.timestamp)}
-                      </span>
+              {filteredTrades.slice(0, 10).map((trade) => {
+                const modelName = leaderboard.find(item => item.aiModelId === trade.modelId)?.aiModel?.name || trade.modelId
+                const isClosed = trade.exitPrice !== null && trade.exitPrice !== undefined
+
+                return (
+                  <div key={trade.id} className="flex items-center justify-between p-4 bg-dark-bg/30 rounded-lg">
+                    <div className="flex items-center gap-4">
+                      <div className="flex flex-col items-center">
+                        <Clock className="h-4 w-4 text-text-secondary mb-1" />
+                        <span className="text-xs text-text-secondary">
+                          {formatTime(new Date(trade.entryTime * 1000))}
+                        </span>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-semibold text-white">{modelName}</span>
+                          <Badge variant="outline" className="text-xs">
+                            {trade.symbol}
+                          </Badge>
+                          <Badge
+                            variant={trade.side?.toUpperCase() === 'LONG' ? 'default' : 'secondary'}
+                            className="text-xs"
+                          >
+                            {trade.side?.toUpperCase()}
+                          </Badge>
+                        </div>
+                        <div className="text-sm text-text-secondary">
+                          Entry: {trade.entryPrice !== undefined ? `$${trade.entryPrice.toFixed(2)}` : 'N/A'}
+                          {isClosed && trade.exitPrice !== null && trade.exitPrice !== undefined && (
+                            <span>{` | Exit: $${trade.exitPrice.toFixed(2)}`}</span>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-semibold text-white">{trade.aiModelId}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {trade.symbol}
-                        </Badge>
-                        <Badge 
-                          variant={trade.side === 'LONG' ? 'default' : 'secondary'}
-                          className="text-xs"
-                        >
-                          {trade.side?.toUpperCase()}
-                        </Badge>
+                    <div className="text-right">
+                      <div className={`text-lg font-bold ${trade.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {trade.pnl >= 0 ? '+' : ''}${trade.pnl.toFixed(2)}
                       </div>
                       <div className="text-sm text-text-secondary">
-                        Entry: ${trade.price?.toFixed(2)} • 
-                        {trade.pnl ? ` P&L: $${trade.pnl.toFixed(2)}` : ' Position Open'}
+                        {isClosed ? 'Closed' : 'Open Position'}
                       </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className={`text-lg font-bold ${
-                      (trade.pnl || 0) >= 0 ? 'text-green-400' : 'text-red-400'
-                    }`}>
-                      {(trade.pnl || 0) >= 0 ? '+' : ''}
-                      ${(trade.pnl || 0).toFixed(2)}
-                    </div>
-                    <div className="text-sm text-text-secondary">
-                      {trade.pnl ? 'Closed' : 'Open'}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
+
               
               {filteredTrades.length === 0 && (
                 <div className="text-center py-8 text-text-secondary">
