@@ -15,15 +15,42 @@ jobs:
       - name: Trigger Data Synchronization
         run: |
           echo "Starting data sync at $(date)"
+          echo "Target URL: https://alphaarena-live.pages.dev/api/cron/sync-all"
 
-          response=$(curl -X GET \
+          # Check if CRON_SECRET is set
+          if [ -z "${{ secrets.CRON_SECRET }}" ]; then
+            echo "❌ Error: CRON_SECRET is not set in GitHub Secrets"
+            echo "Please add CRON_SECRET in Repository Settings → Secrets → Actions"
+            exit 1
+          fi
+
+          echo "CRON_SECRET is set: ${#CRON_SECRET} characters"
+
+          # Make the request with verbose error handling
+          echo "Making API request..."
+          http_code=$(curl -X GET \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            -w "\n%{http_code}" \
+            -w "%{http_code}" \
             -s \
+            -o /tmp/response.json \
+            --connect-timeout 30 \
+            --max-time 120 \
             https://alphaarena-live.pages.dev/api/cron/sync-all)
 
-          http_code=$(echo "$response" | tail -n1)
-          body=$(echo "$response" | head -n -1)
+          curl_exit_code=$?
+
+          if [ $curl_exit_code -ne 0 ]; then
+            echo "❌ curl command failed with exit code: $curl_exit_code"
+            case $curl_exit_code in
+              6) echo "Error: Could not resolve host. Check if the domain is correct." ;;
+              7) echo "Error: Failed to connect to host." ;;
+              28) echo "Error: Timeout reached." ;;
+              *) echo "Error: Unknown curl error." ;;
+            esac
+            exit 1
+          fi
+
+          body=$(cat /tmp/response.json)
 
           echo "HTTP Status: $http_code"
           echo "Response: $body"
@@ -34,6 +61,8 @@ jobs:
             echo "❌ Data sync failed with status $http_code"
             exit 1
           fi
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
 
       - name: Summary
         if: always()
