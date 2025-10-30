@@ -6,9 +6,26 @@ This project uses GitHub Actions to automatically synchronize data from the NOF1
 
 ## Setup Steps
 
-### 1. Set up CRON_SECRET in GitHub
+### 1. Find Your Cloudflare Worker URL
 
-You need to add the `CRON_SECRET` to both GitHub Secrets and Cloudflare environment variables.
+First, you need to find the actual URL where your Worker is deployed.
+
+**Option A: Check from Cloudflare Dashboard**
+1. Go to Cloudflare Dashboard → Workers & Pages
+2. Find your `alphaarena-live` worker
+3. Copy the URL shown (e.g., `https://alphaarena-live.your-account.workers.dev`)
+
+**Option B: Check from GitHub Actions Logs**
+1. Go to GitHub Actions → Deploy to Cloudflare Workers (latest run)
+2. Look for the deployment output that shows the Worker URL
+
+**Option C: Common URLs to try**
+- `https://www.alphaarena-live.com` (if custom domain is configured)
+- `https://alphaarena-live.{your-account}.workers.dev` (default Workers URL)
+
+### 2. Set up Secrets in GitHub
+
+You need to add both `CRON_SECRET` and `WORKER_URL` to GitHub Secrets.
 
 #### Generate a Secret Key
 
@@ -25,14 +42,24 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 # Visit: https://www.random.org/strings/
 ```
 
-#### Add to GitHub Secrets
+#### Add Secrets to GitHub
 
-1. Go to your GitHub repository: https://github.com/coolcatcool-code/alphaarena-live
+1. Go to your GitHub repository: https://github.com/coolcatcool-code/alphaarena-live/settings/secrets/actions
 2. Click on **Settings** → **Secrets and variables** → **Actions**
+
+**Add CRON_SECRET:**
 3. Click **New repository secret**
 4. Name: `CRON_SECRET`
-5. Value: Paste the secret key you generated
+5. Value: Paste the secret key you generated (e.g., `ou6kL8/wUZsuXhV9q4kcevhby/9gqxFLuRRkFNz4GUs=`)
 6. Click **Add secret**
+
+**Add WORKER_URL (Optional but Recommended):**
+7. Click **New repository secret** again
+8. Name: `WORKER_URL`
+9. Value: Your Worker URL from Step 1 (e.g., `https://alphaarena-live.your-account.workers.dev`)
+10. Click **Add secret**
+
+> **Note**: If you don't set `WORKER_URL`, the workflow will automatically try common URLs. However, setting it explicitly is more reliable.
 
 #### Add to Cloudflare Environment Variables
 

@@ -15,7 +15,36 @@ jobs:
       - name: Trigger Data Synchronization
         run: |
           echo "Starting data sync at $(date)"
-          echo "Target URL: https://alphaarena-live.pages.dev/api/cron/sync-all"
+
+          # Determine Worker URL (use WORKER_URL secret if set, otherwise use default)
+          WORKER_URL="${{ secrets.WORKER_URL }}"
+          if [ -z "$WORKER_URL" ]; then
+            echo "⚠️  WORKER_URL not set, trying default URLs..."
+
+            # Try multiple possible URLs
+            URLS=(
+              "https://www.alphaarena-live.com"
+              "https://alphaarena-live.workers.dev"
+            )
+
+            for url in "${URLS[@]}"; do
+              echo "Testing: $url"
+              if curl -s -f -o /dev/null -w "%{http_code}" --connect-timeout 5 "$url" > /dev/null 2>&1; then
+                WORKER_URL="$url"
+                echo "✅ Found working URL: $WORKER_URL"
+                break
+              fi
+            done
+
+            if [ -z "$WORKER_URL" ]; then
+              echo "❌ Error: Could not find working Worker URL"
+              echo "Please set WORKER_URL in GitHub Secrets with your actual Cloudflare Worker URL"
+              echo "Example: https://alphaarena-live.your-account.workers.dev"
+              exit 1
+            fi
+          fi
+
+          echo "Target URL: $WORKER_URL/api/cron/sync-all"
 
           # Check if CRON_SECRET is set
           if [ -z "${{ secrets.CRON_SECRET }}" ]; then
@@ -35,7 +64,7 @@ jobs:
             -o /tmp/response.json \
             --connect-timeout 30 \
             --max-time 120 \
-            https://alphaarena-live.pages.dev/api/cron/sync-all)
+            "$WORKER_URL/api/cron/sync-all")
 
           curl_exit_code=$?
 
