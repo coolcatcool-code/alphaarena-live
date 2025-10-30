@@ -12,7 +12,7 @@ jobs:
     timeout-minutes: 5
 
     steps:
-      - name: Trigger Data Synchronization
+      - name: Trigger Basic Data Synchronization
         run: |
           echo "Starting data sync at $(date)"
 
@@ -89,6 +89,59 @@ jobs:
           else
             echo "❌ Data sync failed with status $http_code"
             exit 1
+          fi
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+      - name: Trigger Advanced Data Synchronization
+        run: |
+          echo "Starting advanced data sync at $(date)"
+
+          # Use the same WORKER_URL from previous step
+          WORKER_URL="${{ secrets.WORKER_URL }}"
+          if [ -z "$WORKER_URL" ]; then
+            # Try default URLs
+            URLS=(
+              "https://www.alphaarena-live.com"
+              "https://alphaarena-live.workers.dev"
+            )
+
+            for url in "${URLS[@]}"; do
+              if curl -s -f -o /dev/null -w "%{http_code}" --connect-timeout 5 "$url" > /dev/null 2>&1; then
+                WORKER_URL="$url"
+                break
+              fi
+            done
+          fi
+
+          echo "Target URL: $WORKER_URL/api/cron/sync-advanced"
+
+          # Make the request
+          echo "Making API request..."
+          http_code=$(curl -X GET \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -w "%{http_code}" \
+            -s \
+            -o /tmp/response_advanced.json \
+            --connect-timeout 30 \
+            --max-time 180 \
+            "$WORKER_URL/api/cron/sync-advanced")
+
+          curl_exit_code=$?
+
+          if [ $curl_exit_code -ne 0 ]; then
+            echo "⚠️  curl command failed with exit code: $curl_exit_code"
+            echo "Continuing anyway as this is non-critical..."
+          else
+            body=$(cat /tmp/response_advanced.json)
+            echo "HTTP Status: $http_code"
+            echo "Response: $body"
+
+            if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+              echo "✅ Advanced data sync completed successfully"
+            else
+              echo "⚠️  Advanced data sync failed with status $http_code (non-critical)"
+            fi
           fi
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
