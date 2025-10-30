@@ -12,10 +12,14 @@ const API_TIMEOUT = 60000 // 60 seconds
 
 /**
  * Initialize Supabase client (runtime only)
+ * Compatible with both Node.js and Cloudflare Workers
  */
-function getSupabaseClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+function getSupabaseClient(request?: NextRequest) {
+  // Try to get env from Cloudflare Workers first, then fall back to process.env
+  const env = request ? (request as any).env : undefined
+
+  const supabaseUrl = env?.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = env?.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
 
   if (!supabaseUrl || !supabaseKey) {
     throw new Error('Missing Supabase environment variables')
@@ -188,7 +192,26 @@ export async function GET(request: NextRequest) {
   try {
     // Verify cron secret
     const authHeader = request.headers.get('authorization')
-    const expectedAuth = `Bearer ${process.env.CRON_SECRET}`
+
+    // In Cloudflare Workers, env variables are accessed via request.env
+    const env = (request as any).env
+    const cronSecret = env?.CRON_SECRET || process.env.CRON_SECRET
+
+    console.log('🔐 Auth check:', {
+      hasAuthHeader: !!authHeader,
+      hasCronSecret: !!cronSecret,
+      secretLength: cronSecret?.length || 0
+    })
+
+    if (!cronSecret) {
+      console.error('❌ CRON_SECRET not configured')
+      return NextResponse.json(
+        { error: 'CRON_SECRET not configured in Worker environment' },
+        { status: 500 }
+      )
+    }
+
+    const expectedAuth = `Bearer ${cronSecret}`
 
     if (authHeader !== expectedAuth) {
       console.error('❌ Unauthorized: Invalid cron secret')
@@ -202,7 +225,7 @@ export async function GET(request: NextRequest) {
     const startTime = Date.now()
 
     // Initialize Supabase client (runtime only)
-    const supabase = getSupabaseClient()
+    const supabase = getSupabaseClient(request)
 
     // Get AI model mapping
     const modelIdMap = await getAIModelIdMap(supabase)

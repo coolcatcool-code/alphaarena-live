@@ -43,7 +43,24 @@ export async function GET(request: NextRequest) {
 
   // 1. 验证Cron Secret
   const authHeader = request.headers.get('authorization')
-  const cronSecret = process.env.CRON_SECRET
+
+  // In Cloudflare Workers, env variables are accessed via request.env
+  const env = (request as any).env
+  const cronSecret = env?.CRON_SECRET || process.env.CRON_SECRET
+
+  console.log('🔐 Auth check:', {
+    hasAuthHeader: !!authHeader,
+    hasCronSecret: !!cronSecret,
+    secretLength: cronSecret?.length || 0
+  })
+
+  if (!cronSecret) {
+    console.error('❌ CRON_SECRET not configured')
+    return NextResponse.json(
+      { error: 'CRON_SECRET not configured in Worker environment' },
+      { status: 500 }
+    )
+  }
 
   if (authHeader !== `Bearer ${cronSecret}`) {
     console.error('❌ Unauthorized access attempt')
