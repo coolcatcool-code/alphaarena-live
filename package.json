@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "prebuild": "tsx scripts/generate-articles-data.ts",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && node -r ./scripts/win-symlink-fallback.cjs ./node_modules/next/dist/bin/next build",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
@@ -16,10 +16,10 @@
     "generate-seo-article": "tsx scripts/generate-seo-article.ts",
     "generate-articles-data": "tsx scripts/generate-articles-data.ts",
     "sync-advanced-data": "tsx scripts/sync-advanced-data.ts",
-    "pages:build": "prisma generate && next build",
+    "pages:build": "prisma generate && node -r ./scripts/win-symlink-fallback.cjs ./node_modules/next/dist/bin/next build",
     "pages:dev": "next dev",
     "pages:deploy": "echo 'Please deploy via Cloudflare Dashboard (Git integration)'",
-    "workers:build": "prisma generate && tsx scripts/generate-articles-data.ts && next build && npx @opennextjs/cloudflare build",
+    "workers:build": "pnpm build && node ./scripts/fix-standalone-node-modules.cjs && node -r ./scripts/win-symlink-fallback.cjs ./node_modules/@opennextjs/cloudflare/dist/cli/index.js build --skipNextBuild",
     "workers:deploy": "pnpm workers:build && wrangler deploy",
     "workers:dev": "wrangler dev",
     "wrangler": "wrangler"

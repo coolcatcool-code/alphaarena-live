@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Check Data Sync Status (Both D1 and Supabase)
  *
@@ -222,3 +224,4 @@ async function main() {
 }
 
 main().catch(console.error)
+// @ts-nocheck

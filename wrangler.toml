@@ -21,10 +21,9 @@ limits = { cpu_ms = 50000 }
 NODE_ENV = "production"
 NEXT_PUBLIC_APP_URL = "https://www.alphaarena-live.com"
 
-# Note: NEXT_PUBLIC_* variables are public and safe to commit
-# Add your Supabase public values here:
-# NEXT_PUBLIC_SUPABASE_URL = "your_supabase_url"
-# NEXT_PUBLIC_SUPABASE_ANON_KEY = "your_anon_key"
+# Supabase public values (safe to commit)
+NEXT_PUBLIC_SUPABASE_URL = "https://kqalqqnuliuszwljfosz.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtxYWxxcW51bGl1c3p3bGpmb3N6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwMDg4OTMsImV4cCI6MjA3NjU4NDg5M30.q0A3cQ0Jv9PIkIJLx-KQPso_EDD1I3ol-U6iZXer1_w"
 
 # Sensitive secrets (already set via wrangler secret put):
 # - SUPABASE_SERVICE_ROLE_KEY

@@ -75,7 +75,9 @@
       "Bash(pnpm wrangler d1 execute:*)",
       "Bash(openssl rand:*)",
       "Bash(tsx scripts/check-d1-data.ts:*)",
-      "Bash(gh workflow run:*)"
+      "Bash(gh workflow run:*)",
+      "Bash(gh run list:*)",
+      "Bash(timeout /t 3)"
     ],
     "deny": [],
     "ask": []

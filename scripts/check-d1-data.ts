@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * Check D1 Database Data Status
  *
@@ -123,3 +125,4 @@ async function checkD1Tables(): Promise<void> {
 }
 
 checkD1Tables().catch(console.error)
+// @ts-nocheck

@@ -24,6 +24,7 @@ async function triggerSync(endpoint: string, name: string) {
   }
 
   try {
+    const startTime = Date.now()
     const response = await fetch(`${WORKER_URL}${endpoint}`, {
       method: 'GET',
       headers: {
@@ -32,13 +33,30 @@ async function triggerSync(endpoint: string, name: string) {
       }
     })
 
-    const data = await response.json()
+    const data = await response.json() as any
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(2)
 
-    console.log(`Status: ${response.status}`)
+    console.log(`Status: ${response.status} (${elapsed}s)`)
     console.log('Response:', JSON.stringify(data, null, 2))
 
     if (response.ok) {
       console.log(`✅ ${name} completed successfully`)
+
+      // Show detailed results if available
+      if (data.analytics) {
+        console.log(`   📊 Analytics: ${data.analytics.synced} synced, ${data.analytics.skipped} skipped`)
+      }
+      if (data.results) {
+        console.log(`   📋 Tasks completed: ${data.results.length}`)
+        data.results.forEach((r: any) => {
+          if (r.status === 'success') {
+            console.log(`      ✅ ${r.task}`)
+          } else {
+            console.log(`      ❌ ${r.task}: ${r.error}`)
+          }
+        })
+      }
+
       return true
     } else {
       console.error(`❌ ${name} failed`)
