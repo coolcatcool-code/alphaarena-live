@@ -95,34 +95,69 @@ export default function LivePage() {
         fetch('/api/crypto/prices'),
       ])
 
-      const leaderboardData = await leaderboardRes.json() as LeaderboardResponse
-      const positionsData = await positionsRes.json() as PositionsResponse
-      const tradesJson = await tradesRes.json() as RecentTradesResponse
-      const cryptoPrices = await cryptoPricesRes.json() as { data?: any[]; source?: string }
+      // Safe JSON parsing with error handling
+      let leaderboardData: LeaderboardResponse = { data: [], count: 0, timestamp: '' }
+      let positionsData: PositionsResponse = { data: [], count: 0, timestamp: '' }
+      let tradesJson: RecentTradesResponse = { data: [], total: 0, timestamp: '' }
+      let cryptoPrices: { data?: any[]; source?: string } = { data: [] }
 
-      const recentTrades: RecentTrade[] = Array.isArray(tradesJson.data)
+      try {
+        if (leaderboardRes.ok) {
+          leaderboardData = await leaderboardRes.json()
+        }
+      } catch (e) {
+        console.error('Failed to parse leaderboard:', e)
+      }
+
+      try {
+        if (positionsRes.ok) {
+          positionsData = await positionsRes.json()
+        }
+      } catch (e) {
+        console.error('Failed to parse positions:', e)
+      }
+
+      try {
+        if (tradesRes.ok) {
+          tradesJson = await tradesRes.json()
+        }
+      } catch (e) {
+        console.error('Failed to parse trades:', e)
+      }
+
+      try {
+        if (cryptoPricesRes.ok) {
+          cryptoPrices = await cryptoPricesRes.json()
+        }
+      } catch (e) {
+        console.error('Failed to parse crypto prices:', e)
+      }
+
+      const recentTrades: RecentTrade[] = Array.isArray(tradesJson?.data)
         ? tradesJson.data.map(trade => ({
-            id: trade.id,
-            modelId: trade.modelId,
-            symbol: trade.symbol,
-            side: trade.side,
-            pnl: trade.realizedPnL ?? trade.pnl ?? 0,
-            entryPrice: trade.entryPrice,
-            exitPrice: trade.exitPrice ?? null,
-            entryTime: trade.entryTime ?? trade.timestamp ?? 0
+            id: trade?.id || '',
+            modelId: trade?.modelId || '',
+            symbol: trade?.symbol || '',
+            side: trade?.side || '',
+            pnl: trade?.realizedPnL ?? trade?.pnl ?? 0,
+            entryPrice: trade?.entryPrice,
+            exitPrice: trade?.exitPrice ?? null,
+            entryTime: trade?.entryTime ?? trade?.timestamp ?? 0
           }))
         : []
 
-      setLeaderboard(leaderboardData.data)
-      setPositions(positionsData.data)
+      setLeaderboard(Array.isArray(leaderboardData?.data) ? leaderboardData.data : [])
+      setPositions(Array.isArray(positionsData?.data) ? positionsData.data : [])
       setLiveTrades(recentTrades)
 
-      // Calculate live stats
-      const stats = calculateLiveStats(leaderboardData.data, positionsData.data)
+      // Calculate live stats with safe data
+      const safeLeaderboard = Array.isArray(leaderboardData?.data) ? leaderboardData.data : []
+      const safePositions = Array.isArray(positionsData?.data) ? positionsData.data : []
+      const stats = calculateLiveStats(safeLeaderboard, safePositions)
       setLiveStats(stats)
 
-      // Real-time crypto prices from D1
-      if (cryptoPrices.data && cryptoPrices.data.length > 0) {
+      // Real-time crypto prices
+      if (cryptoPrices?.data && Array.isArray(cryptoPrices.data) && cryptoPrices.data.length > 0) {
         setMarketData(cryptoPrices.data)
       } else {
         // Fallback to mock data if API fails
@@ -139,24 +174,54 @@ export default function LivePage() {
     } catch (error) {
       console.error('Failed to fetch live data:', error)
       // Set fallback mock data on error
+      setLeaderboard([])
+      setPositions([])
+      setLiveTrades([])
       setMarketData([
         { symbol: 'BTC', price: 67234.56, change24h: 2.34, volume: 28500000000 },
         { symbol: 'ETH', price: 3456.78, change24h: -1.23, volume: 15200000000 },
         { symbol: 'SOL', price: 178.90, change24h: 4.56, volume: 2100000000 },
         { symbol: 'BNB', price: 612.34, change24h: 1.89, volume: 1800000000 },
       ])
-      setLiveTrades([])
+      setLiveStats({
+        totalActivePositions: 0,
+        totalUnrealizedPnL: 0,
+        totalRealizedPnL: 0,
+        mostActiveModel: 'N/A',
+        riskLevel: 'low',
+        marketSentiment: 'neutral'
+      })
+      setLoading(false)
     }
   }
 
   const calculateLiveStats = (leaderboard: AISnapshot[], positions: Position[]): LiveStats => {
-    const totalUnrealizedPnL = positions.reduce((sum, pos) => sum + (pos.pnl || 0), 0)
-    const totalRealizedPnL = leaderboard.reduce((sum, ai) => sum + (ai.currentPnL || 0), 0)
-    const mostActive = leaderboard.length > 0
-      ? leaderboard.reduce((max, ai) =>
-          (ai.openPositions || 0) > (max.openPositions || 0) ? ai : max, leaderboard[0]
-        )
-      : undefined
+    // Safe array checks
+    const safeLeaderboard = Array.isArray(leaderboard) ? leaderboard : []
+    const safePositions = Array.isArray(positions) ? positions : []
+
+    const totalUnrealizedPnL = safePositions.reduce((sum, pos) => {
+      const pnl = Number(pos?.pnl) || 0
+      return sum + pnl
+    }, 0)
+
+    const totalRealizedPnL = safeLeaderboard.reduce((sum, ai) => {
+      const pnl = Number(ai?.currentPnL) || 0
+      return sum + pnl
+    }, 0)
+
+    let mostActive = undefined
+    if (safeLeaderboard.length > 0) {
+      try {
+        mostActive = safeLeaderboard.reduce((max, ai) => {
+          const aiPositions = Number(ai?.openPositions) || 0
+          const maxPositions = Number(max?.openPositions) || 0
+          return aiPositions > maxPositions ? ai : max
+        }, safeLeaderboard[0])
+      } catch (e) {
+        console.error('Error calculating most active:', e)
+      }
+    }
 
     const riskLevel = Math.abs(totalUnrealizedPnL) > 1000 ? 'high' :
       Math.abs(totalUnrealizedPnL) > 500 ? 'medium' : 'low'
@@ -165,7 +230,7 @@ export default function LivePage() {
       totalUnrealizedPnL < -100 ? 'bearish' : 'neutral'
 
     return {
-      totalActivePositions: positions.length,
+      totalActivePositions: safePositions.length,
       totalUnrealizedPnL,
       totalRealizedPnL,
       mostActiveModel: mostActive?.aiModel?.name || 'N/A',
@@ -226,6 +291,20 @@ export default function LivePage() {
       case 'bearish': return <TrendingDown className="h-4 w-4 text-red-400" />
       default: return <Activity className="h-4 w-4 text-gray-400" />
     }
+  }
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-gradient-to-b from-dark-bg to-slate-900">
+        <div className="container mx-auto px-4 py-12">
+          <div className="flex flex-col items-center justify-center min-h-[60vh]">
+            <RefreshCw className="h-12 w-12 text-brand-blue animate-spin mb-4" />
+            <p className="text-xl text-white mb-2">Loading Live Data...</p>
+            <p className="text-text-secondary">Fetching real-time trading information</p>
+          </div>
+        </div>
+      </main>
+    )
   }
 
   return (
@@ -382,54 +461,65 @@ export default function LivePage() {
           </div>
           <Card className="p-6">
             <div className="space-y-3">
-              {leaderboard.map((ai) => (
-                <Link key={ai.id} href={`/live/${ai.aiModelId}`}>
-                  <div className="flex items-center justify-between p-4 rounded-lg hover:bg-dark-bg/50 transition-colors cursor-pointer border border-transparent hover:border-dark-border">
-                    <div className="flex items-center gap-4">
-                      <span className="text-2xl font-bold text-text-muted w-8">
-                        #{ai.rank}
-                      </span>
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-4 h-4 rounded-full"
-                          style={{ backgroundColor: ai.aiModel.color || '#888' }}
-                        />
-                        <div>
-                          <span className="text-white font-semibold">{ai.aiModel.name}</span>
-                          <div className="text-sm text-text-secondary">
-                            {ai.openPositions || 0} trades • Win rate {(ai.winRate || 0).toFixed(1)}%
+              {leaderboard && leaderboard.length > 0 ? (
+                leaderboard.map((ai) => {
+                  if (!ai || !ai.id || !ai.aiModel) return null
+
+                  return (
+                    <Link key={ai.id} href={`/live/${ai.aiModelId}`}>
+                      <div className="flex items-center justify-between p-4 rounded-lg hover:bg-dark-bg/50 transition-colors cursor-pointer border border-transparent hover:border-dark-border">
+                        <div className="flex items-center gap-4">
+                          <span className="text-2xl font-bold text-text-muted w-8">
+                            #{ai.rank || 0}
+                          </span>
+                          <div className="flex items-center gap-3">
+                            <div
+                              className="w-4 h-4 rounded-full"
+                              style={{ backgroundColor: ai.aiModel?.color || '#888' }}
+                            />
+                            <div>
+                              <span className="text-white font-semibold">{ai.aiModel?.name || 'Unknown'}</span>
+                              <div className="text-sm text-text-secondary">
+                                {ai.openPositions || 0} trades • Win rate {(ai.winRate || 0).toFixed(1)}%
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-6">
+                          <div className="text-right">
+                            <div className={`text-lg font-bold ${
+                              (ai.currentPnL || 0) >= 0 ? 'text-green-400' : 'text-red-400'
+                            }`}>
+                              {(ai.currentPnL || 0) >= 0 ? '+' : ''}{(ai.currentPnL || 0).toFixed(2)}%
+                            </div>
+                            <div className="text-sm text-text-secondary">
+                              ${(ai.totalAssets || 0).toLocaleString()}
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-center">
+                            {(ai.currentPnL || 0) >= 0 ? (
+                              <CheckCircle className="h-5 w-5 text-green-400" />
+                            ) : (
+                              <XCircle className="h-5 w-5 text-red-400" />
+                            )}
+                            <Badge
+                              variant={(ai.currentPnL || 0) >= 0 ? "default" : "secondary"}
+                              className="mt-1 text-xs"
+                            >
+                              {positionsByAI[ai.aiModelId]?.length || 0} positions
+                            </Badge>
                           </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-6">
-                      <div className="text-right">
-                        <div className={`text-lg font-bold ${
-                          ai.currentPnL >= 0 ? 'text-green-400' : 'text-red-400'
-                        }`}>
-                          {ai.currentPnL >= 0 ? '+' : ''}{ai.currentPnL.toFixed(2)}%
-                        </div>
-                        <div className="text-sm text-text-secondary">
-                          ${ai.totalAssets?.toLocaleString() || '0'}
-                        </div>
-                      </div>
-                      <div className="flex flex-col items-center">
-                        {ai.currentPnL >= 0 ? (
-                          <CheckCircle className="h-5 w-5 text-green-400" />
-                        ) : (
-                          <XCircle className="h-5 w-5 text-red-400" />
-                        )}
-                        <Badge 
-                          variant={ai.currentPnL >= 0 ? "default" : "secondary"}
-                          className="mt-1 text-xs"
-                        >
-                          {positionsByAI[ai.aiModelId]?.length || 0} positions
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+                    </Link>
+                  )
+                })
+              ) : (
+                <div className="text-center py-8 text-text-secondary">
+                  <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>Loading leaderboard data...</p>
+                </div>
+              )}
             </div>
           </Card>
         </section>
@@ -457,57 +547,59 @@ export default function LivePage() {
           
           <Card className="p-6">
             <div className="space-y-4">
-              {filteredTrades.slice(0, 10).map((trade) => {
-                const modelName = leaderboard.find(item => item.aiModelId === trade.modelId)?.aiModel?.name || trade.modelId
-                const isClosed = trade.exitPrice !== null && trade.exitPrice !== undefined
+              {filteredTrades && filteredTrades.length > 0 ? (
+                filteredTrades.slice(0, 10).map((trade) => {
+                  if (!trade || !trade.id) return null
 
-                return (
-                  <div key={trade.id} className="flex items-center justify-between p-4 bg-dark-bg/30 rounded-lg">
-                    <div className="flex items-center gap-4">
-                      <div className="flex flex-col items-center">
-                        <Clock className="h-4 w-4 text-text-secondary mb-1" />
-                        <span className="text-xs text-text-secondary">
-                          {formatTime(new Date(trade.entryTime * 1000))}
-                        </span>
+                  const modelName = leaderboard?.find(item => item?.aiModelId === trade.modelId)?.aiModel?.name || trade.modelId || 'Unknown'
+                  const isClosed = trade.exitPrice !== null && trade.exitPrice !== undefined
+                  const pnl = Number(trade.pnl) || 0
+
+                  return (
+                    <div key={trade.id} className="flex items-center justify-between p-4 bg-dark-bg/30 rounded-lg">
+                      <div className="flex items-center gap-4">
+                        <div className="flex flex-col items-center">
+                          <Clock className="h-4 w-4 text-text-secondary mb-1" />
+                          <span className="text-xs text-text-secondary">
+                            {formatTime(new Date((trade.entryTime || 0) * 1000))}
+                          </span>
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-semibold text-white">{modelName}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {trade.symbol || 'N/A'}
+                            </Badge>
+                            <Badge
+                              variant={(trade.side || '').toUpperCase() === 'LONG' ? 'default' : 'secondary'}
+                              className="text-xs"
+                            >
+                              {(trade.side || 'N/A').toUpperCase()}
+                            </Badge>
+                          </div>
+                          <div className="text-sm text-text-secondary">
+                            Entry: {trade.entryPrice !== undefined ? `$${Number(trade.entryPrice).toFixed(2)}` : 'N/A'}
+                            {isClosed && trade.exitPrice !== null && trade.exitPrice !== undefined && (
+                              <span>{` | Exit: $${Number(trade.exitPrice).toFixed(2)}`}</span>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-semibold text-white">{modelName}</span>
-                          <Badge variant="outline" className="text-xs">
-                            {trade.symbol}
-                          </Badge>
-                          <Badge
-                            variant={trade.side?.toUpperCase() === 'LONG' ? 'default' : 'secondary'}
-                            className="text-xs"
-                          >
-                            {trade.side?.toUpperCase()}
-                          </Badge>
+                      <div className="text-right">
+                        <div className={`text-lg font-bold ${pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}
                         </div>
                         <div className="text-sm text-text-secondary">
-                          Entry: {trade.entryPrice !== undefined ? `$${trade.entryPrice.toFixed(2)}` : 'N/A'}
-                          {isClosed && trade.exitPrice !== null && trade.exitPrice !== undefined && (
-                            <span>{` | Exit: $${trade.exitPrice.toFixed(2)}`}</span>
-                          )}
+                          {isClosed ? 'Closed' : 'Open Position'}
                         </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className={`text-lg font-bold ${trade.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {trade.pnl >= 0 ? '+' : ''}${trade.pnl.toFixed(2)}
-                      </div>
-                      <div className="text-sm text-text-secondary">
-                        {isClosed ? 'Closed' : 'Open Position'}
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-
-              
-              {filteredTrades.length === 0 && (
+                  )
+                })
+              ) : (
                 <div className="text-center py-8 text-text-secondary">
                   <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No trading data matching the filter criteria</p>
+                  <p>No trading data available</p>
                 </div>
               )}
             </div>
