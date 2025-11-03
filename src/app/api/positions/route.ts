@@ -1,62 +1,95 @@
-import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { mockPositions } from '@/lib/mock/data'
+import { NextRequest, NextResponse } from 'next/server'
 
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-export async function GET() {
+const ACCOUNT_TOTALS_API = 'https://nof1.ai/api/account_totals'
+const API_TIMEOUT = 30000
+
+/**
+ * Positions API - Fetches current open positions from NOF1 API
+ */
+export async function GET(request: NextRequest) {
   try {
-    const supabase = createClient()
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT)
 
-    const { data: positions, error } = await supabase
-      .from('positions')
-      .select(`
-        *,
-        aiModel:ai_models(*)
-      `)
-      .eq('status', 'OPEN')
-      .order('created_at', { ascending: false })
+    const response = await fetch(ACCOUNT_TOTALS_API, {
+      headers: {
+        'User-Agent': 'AlphaArena/1.0',
+        'Accept': 'application/json'
+      },
+      signal: controller.signal
+    })
 
-    if (error) throw error
+    clearTimeout(timeoutId)
 
-    const enrichedPositions = (positions || []).map(p => ({
-      id: p.id,
-      aiModelId: p.ai_model_id,
-      symbol: p.symbol,
-      side: p.side,
-      entryPrice: Number(p.entry_price),
-      currentPrice: Number(p.current_price),
-      size: Number(p.size),
-      leverage: p.leverage,
-      pnl: Number(p.pnl),
-      pnlPercentage: Number(p.pnl_percentage),
-      status: p.status,
-      openedAt: new Date(p.opened_at),
-      closedAt: p.closed_at ? new Date(p.closed_at) : undefined,
-      aiModel: {
-        id: p.aiModel.id,
-        name: p.aiModel.name,
-        avatar: p.aiModel.avatar,
-        description: p.aiModel.description,
-        color: p.aiModel.color,
-        createdAt: new Date(p.aiModel.created_at),
-        updatedAt: new Date(p.aiModel.updated_at),
+    if (!response.ok) {
+      throw new Error(`NOF1 API returned ${response.status}`)
+    }
+
+    const data = await response.json() as { accountTotals: any[] }
+    const accountTotals = data.accountTotals || []
+
+    // Extract all open positions from all accounts
+    const allPositions: any[] = []
+
+    for (const account of accountTotals) {
+      const modelId = account.model_id
+      const positions = account.positions || {}
+
+      for (const [symbol, position] of Object.entries(positions as Record<string, any>)) {
+        if (position && position.quantity !== 0) {
+          allPositions.push({
+            id: `${modelId}-${symbol}-${position.entry_time}`,
+            aiModelId: modelId,
+            symbol: symbol,
+            side: Number(position.quantity) > 0 ? 'LONG' : 'SHORT',
+            entryPrice: Number(position.entry_price || 0),
+            currentPrice: Number(position.current_price || 0),
+            size: Math.abs(Number(position.quantity || 0)),
+            leverage: Number(position.leverage || 1),
+            pnl: Number(position.unrealized_pnl || 0),
+            pnlPercentage: Number(position.unrealized_pnl || 0) / Number(position.margin || 1) * 100,
+            status: 'OPEN',
+            openedAt: new Date(position.entry_time * 1000),
+            margin: Number(position.margin || 0),
+            liquidationPrice: Number(position.liquidation_price || 0),
+            aiModel: {
+              id: modelId,
+              name: modelId,
+              avatar: `/avatars/${modelId}.png`,
+              description: 'AI Trading Model',
+              color: '#888888',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            }
+          })
+        }
       }
-    }))
+    }
 
     return NextResponse.json({
-      data: enrichedPositions,
+      data: allPositions,
       timestamp: new Date().toISOString(),
-      count: enrichedPositions.length,
-      source: 'supabase'
+      count: allPositions.length,
+      source: 'nof1-api-direct'
     })
-  } catch (error) {
-    console.error('Positions API error:', error)
-    return NextResponse.json({
-      data: mockPositions.filter(p => p.status === 'OPEN'),
-      timestamp: new Date().toISOString(),
-      count: mockPositions.filter(p => p.status === 'OPEN').length,
-      source: 'mock-fallback'
-    })
+
+  } catch (error: any) {
+    console.error('Error fetching positions:', error)
+
+    if (error.name === 'AbortError') {
+      return NextResponse.json(
+        { error: 'Request timeout - NOF1 API took too long to respond' },
+        { status: 504 }
+      )
+    }
+
+    return NextResponse.json(
+      { error: 'Failed to fetch positions from NOF1 API', details: error.message },
+      { status: 500 }
+    )
   }
 }

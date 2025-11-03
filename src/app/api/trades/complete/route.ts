@@ -3,8 +3,11 @@ import { NextRequest, NextResponse } from 'next/server'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
+const TRADES_API = 'https://nof1.ai/api/trades'
+const API_TIMEOUT = 30000 // 30 seconds
+
 /**
- * Complete Trades API - Provides access to all 272 detailed trade records
+ * Complete Trades API - Fetches all detailed trade records from NOF1 API
  *
  * Features:
  * - Pagination (limit, offset)
@@ -29,120 +32,110 @@ export async function GET(request: NextRequest) {
     const sortBy = searchParams.get('sort_by') || 'entry_time'
     const sortOrder = searchParams.get('sort_order') || 'DESC'
 
-    // Validate sort parameters
-    const allowedSortFields = ['entry_time', 'exit_time', 'realized_net_pnl', 'confidence', 'quantity', 'leverage']
-    const sortField = allowedSortFields.includes(sortBy) ? sortBy : 'entry_time'
-    const sortDirection = sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC'
+    // Fetch trades from NOF1 API
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT)
 
-    // Get D1 database binding
-    const env = (request as any).env
-    const db = env?.DB
+    const response = await fetch(TRADES_API, {
+      headers: {
+        'User-Agent': 'AlphaArena/1.0',
+        'Accept': 'application/json'
+      },
+      signal: controller.signal
+    })
 
-    if (!db) {
-      return NextResponse.json(
-        { error: 'Database not available' },
-        { status: 503 }
-      )
+    clearTimeout(timeoutId)
+
+    if (!response.ok) {
+      throw new Error(`NOF1 API returned ${response.status}`)
     }
 
-    // Build WHERE clause
-    const whereConditions: string[] = []
-    const bindings: any[] = []
+    const data = await response.json() as { trades: any[] }
+    let trades = data.trades || []
 
+    // Apply filters
     if (modelId) {
-      whereConditions.push('model_id = ?')
-      bindings.push(modelId)
+      trades = trades.filter((trade: any) => {
+        const tradeModelId = trade.model_id?.toLowerCase()
+        const searchId = modelId.toLowerCase()
+
+        // Direct match
+        if (tradeModelId === searchId) return true
+
+        // Common mappings
+        const mappings: Record<string, string[]> = {
+          'claude-1': ['claude-sonnet-4-5', 'claude-sonnet', 'claude'],
+          'deepseek-1': ['deepseek-chat-v3.1', 'deepseek-chat', 'deepseek'],
+          'gemini-1': ['gemini-2.5-pro', 'gemini-pro', 'gemini'],
+          'chatgpt-1': ['gpt-5', 'gpt-4', 'chatgpt'],
+          'grok-1': ['grok-4', 'grok'],
+          'qwen-1': ['qwen3-max', 'qwen'],
+        }
+
+        for (const [dbId, apiIds] of Object.entries(mappings)) {
+          if (searchId === dbId && apiIds.some(id => id === tradeModelId)) {
+            return true
+          }
+        }
+
+        return false
+      })
     }
 
     if (symbol) {
-      whereConditions.push('symbol = ?')
-      bindings.push(symbol)
+      trades = trades.filter((trade: any) =>
+        trade.symbol?.toUpperCase() === symbol.toUpperCase()
+      )
     }
 
     if (side) {
-      whereConditions.push('side = ?')
-      bindings.push(side)
+      trades = trades.filter((trade: any) =>
+        trade.side?.toUpperCase() === side.toUpperCase()
+      )
     }
 
-    const whereClause = whereConditions.length > 0
-      ? `WHERE ${whereConditions.join(' AND ')}`
-      : ''
+    // Apply sorting
+    const sortField = sortBy === 'realized_net_pnl' ? 'realized_net_pnl' :
+                     sortBy === 'confidence' ? 'confidence' :
+                     sortBy === 'quantity' ? 'quantity' :
+                     sortBy === 'leverage' ? 'leverage' :
+                     sortBy === 'exit_time' ? 'exit_time' :
+                     'entry_time'
 
-    // Query total count
-    const countQuery = await db.prepare(`
-      SELECT COUNT(*) as total
-      FROM trades_detailed
-      ${whereClause}
-    `).bind(...bindings).first()
+    trades.sort((a: any, b: any) => {
+      const aVal = a[sortField] || 0
+      const bVal = b[sortField] || 0
+      return sortOrder.toUpperCase() === 'DESC' ?
+        (bVal > aVal ? 1 : -1) :
+        (aVal > bVal ? 1 : -1)
+    })
 
-    const totalCount = Number(countQuery?.total || 0)
+    const totalCount = trades.length
 
-    // Query trades with pagination
-    const tradesQuery = await db.prepare(`
-      SELECT
-        id,
-        model_id,
-        -- Basic Info
-        symbol,
-        side,
-        trade_type,
-        leverage,
-        quantity,
-        confidence,
-        -- Entry Data
-        entry_time,
-        entry_human_time,
-        entry_price,
-        entry_sz,
-        entry_oid,
-        entry_tid,
-        entry_commission_dollars,
-        entry_closed_pnl,
-        entry_crossed,
-        entry_liquidation,
-        -- Exit Data
-        exit_time,
-        exit_human_time,
-        exit_price,
-        exit_sz,
-        exit_oid,
-        exit_tid,
-        exit_commission_dollars,
-        exit_closed_pnl,
-        exit_crossed,
-        exit_liquidation,
-        exit_plan,
-        -- P&L Data
-        realized_net_pnl,
-        realized_gross_pnl,
-        total_commission_dollars,
-        -- Metadata
-        trade_id,
-        cached_at
-      FROM trades_detailed
-      ${whereClause}
-      ORDER BY ${sortField} ${sortDirection}
-      LIMIT ? OFFSET ?
-    `).bind(...bindings, limit, offset).all()
+    // Apply pagination
+    const paginatedTrades = trades.slice(offset, offset + limit)
 
-    const trades = (tradesQuery.results || []).map((trade: any) => {
+    // Transform to frontend format
+    const transformedTrades = paginatedTrades.map((trade: any) => {
       let exitPlan = null
       try {
-        if (trade.exit_plan) {
+        if (typeof trade.exit_plan === 'string') {
           exitPlan = JSON.parse(trade.exit_plan)
+        } else if (trade.exit_plan) {
+          exitPlan = trade.exit_plan
         }
       } catch (e) {
         console.warn('Failed to parse exit_plan:', e)
       }
 
       return {
-        id: trade.id,
+        id: trade.id || trade.trade_id,
         modelId: trade.model_id,
 
         // Basic Info
         symbol: trade.symbol,
         side: trade.side,
-        tradeType: trade.trade_type,
+        tradeType: trade.trade_type || (trade.side === 'LONG' ? 'long' : 'short'),
         leverage: Number(trade.leverage || 1),
         quantity: Number(trade.quantity || 0),
         confidence: Number(trade.confidence || 0),
@@ -150,9 +143,9 @@ export async function GET(request: NextRequest) {
         // Entry Data
         entry: {
           time: Number(trade.entry_time),
-          humanTime: trade.entry_human_time,
+          humanTime: trade.entry_human_time || new Date(trade.entry_time * 1000).toISOString(),
           price: Number(trade.entry_price || 0),
-          size: Number(trade.entry_sz || 0),
+          size: Number(trade.entry_sz || trade.quantity || 0),
           orderId: trade.entry_oid,
           tradeId: trade.entry_tid,
           commission: Number(trade.entry_commission_dollars || 0),
@@ -164,9 +157,9 @@ export async function GET(request: NextRequest) {
         // Exit Data
         exit: trade.exit_time ? {
           time: Number(trade.exit_time),
-          humanTime: trade.exit_human_time,
+          humanTime: trade.exit_human_time || new Date(trade.exit_time * 1000).toISOString(),
           price: Number(trade.exit_price || 0),
-          size: Number(trade.exit_sz || 0),
+          size: Number(trade.exit_sz || trade.quantity || 0),
           orderId: trade.exit_oid,
           tradeId: trade.exit_tid,
           commission: Number(trade.exit_commission_dollars || 0),
@@ -184,8 +177,8 @@ export async function GET(request: NextRequest) {
         },
 
         // Metadata
-        tradeId: trade.trade_id,
-        cachedAt: new Date(Number(trade.cached_at) * 1000).toISOString(),
+        tradeId: trade.trade_id || trade.id,
+        cachedAt: new Date().toISOString(),
 
         // Calculated fields
         holdingPeriodMins: trade.exit_time
@@ -197,7 +190,7 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json({
-      data: trades,
+      data: transformedTrades,
       pagination: {
         total: totalCount,
         limit: limit,
@@ -211,16 +204,24 @@ export async function GET(request: NextRequest) {
       },
       sorting: {
         field: sortField,
-        order: sortDirection,
+        order: sortOrder,
       },
+      source: 'nof1-api-direct',
       timestamp: new Date().toISOString(),
     })
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching complete trades:', error)
 
+    if (error.name === 'AbortError') {
+      return NextResponse.json(
+        { error: 'Request timeout - NOF1 API took too long to respond' },
+        { status: 504 }
+      )
+    }
+
     return NextResponse.json(
-      { error: 'Failed to fetch trades data' },
+      { error: 'Failed to fetch trades data from NOF1 API', details: error.message },
       { status: 500 }
     )
   }

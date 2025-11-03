@@ -3,87 +3,64 @@ import { NextRequest, NextResponse } from 'next/server'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
+const TRADES_API = 'https://nof1.ai/api/trades'
+const API_TIMEOUT = 30000
+
 /**
- * Recent Trades API - Provides latest trading records based on D1 database
+ * Recent Trades API - Returns latest trades from NOF1 API
  */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '10')
 
-    // Get D1 database binding
-    const env = (request as any).env
-    const db = env?.DB
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT)
 
-    if (!db) {
-      // If no D1 database, return empty data
-      return NextResponse.json({
-        data: [],
-        total: 0,
-        timestamp: new Date().toISOString()
-      })
+    const response = await fetch(TRADES_API, {
+      headers: {
+        'User-Agent': 'AlphaArena/1.0',
+        'Accept': 'application/json'
+      },
+      signal: controller.signal
+    })
+
+    clearTimeout(timeoutId)
+
+    if (!response.ok) {
+      throw new Error(`NOF1 API returned ${response.status}`)
     }
 
-    // Query recent trading data
-    const tradesQuery = await db.prepare(`
-      SELECT 
-        id,
-        model_id,
-        symbol,
-        side,
-        entry_time,
-        exit_time,
-        realized_net_pnl,
-        trade_data
-      FROM recent_trades_cache 
-      ORDER BY entry_time DESC 
-      LIMIT ?
-    `).bind(limit).all()
-
-    const trades = (tradesQuery.results || []).map((trade: any) => {
-      let tradeData = {}
-      try {
-        tradeData = JSON.parse(trade.trade_data || '{}')
-      } catch (e) {
-        console.warn('Failed to parse trade data:', e)
-      }
-
-      return {
-        id: trade.id,
+    const data = await response.json() as { trades: any[] }
+    const trades = (data.trades || [])
+      .sort((a: any, b: any) => (b.entry_time || 0) - (a.entry_time || 0))
+      .slice(0, limit)
+      .map((trade: any) => ({
+        id: trade.id || trade.trade_id,
         modelId: trade.model_id,
         symbol: trade.symbol,
         side: trade.side,
-        pnl: Number(trade.realized_net_pnl || 0),
-        timestamp: Number(trade.entry_time),
-        entryTime: Number(trade.entry_time),
-        exitTime: trade.exit_time ? Number(trade.exit_time) : null,
-        entryPrice: (tradeData as any).entry_price || 0,
-        exitPrice: (tradeData as any).exit_price || null,
-        realizedPnL: Number(trade.realized_net_pnl || 0),
-        ...tradeData
-      }
-    })
-
-    // 获取总交易数
-    const countQuery = await db.prepare(`
-      SELECT COUNT(*) as total 
-      FROM recent_trades_cache
-    `).first()
+        entryTime: trade.entry_time,
+        exitTime: trade.exit_time,
+        realizedNetPnl: Number(trade.realized_net_pnl || 0),
+        entryPrice: Number(trade.entry_price || 0),
+        exitPrice: Number(trade.exit_price || 0),
+        quantity: Number(trade.quantity || 0),
+      }))
 
     return NextResponse.json({
       data: trades,
-      total: Number(countQuery?.total || 0),
+      total: trades.length,
+      source: 'nof1-api-direct',
       timestamp: new Date().toISOString()
     })
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching recent trades:', error)
-    
-    return NextResponse.json({
-      data: [],
-      total: 0,
-      timestamp: new Date().toISOString(),
-      error: 'Failed to fetch trades'
-    }, { status: 500 })
+
+    return NextResponse.json(
+      { error: 'Failed to fetch recent trades', details: error.message },
+      { status: 500 }
+    )
   }
 }

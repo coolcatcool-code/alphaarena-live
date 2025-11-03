@@ -3,8 +3,11 @@ import { NextRequest, NextResponse } from 'next/server'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
+const ANALYTICS_API = 'https://nof1.ai/api/analytics'
+const API_TIMEOUT = 30000 // 30 seconds
+
 /**
- * Model Analytics API - Provides 50+ professional quantitative metrics
+ * Model Analytics API - Fetches data directly from NOF1 API
  *
  * Returns comprehensive analytics data including:
  * - P&L statistics (avg, std, biggest gain/loss)
@@ -13,7 +16,7 @@ export const dynamic = 'force-dynamic'
  * - Holding period analysis
  * - Leverage usage
  * - Sharpe ratio
- * - Invocation stats
+ * - And 50+ other metrics
  */
 export async function GET(
   request: NextRequest,
@@ -22,240 +25,203 @@ export async function GET(
   try {
     const { modelId } = params
 
-    // Get D1 database binding
-    const env = (request as any).env
-    const db = env?.DB
+    // Fetch analytics data from NOF1 API
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT)
 
-    if (!db) {
-      return NextResponse.json(
-        { error: 'Database not available' },
-        { status: 503 }
-      )
+    const response = await fetch(ANALYTICS_API, {
+      headers: {
+        'User-Agent': 'AlphaArena/1.0',
+        'Accept': 'application/json'
+      },
+      signal: controller.signal
+    })
+
+    clearTimeout(timeoutId)
+
+    if (!response.ok) {
+      throw new Error(`NOF1 API returned ${response.status}`)
     }
 
-    // Query analytics data from D1
-    const analyticsQuery = await db.prepare(`
-      SELECT
-        model_id,
-        updated_at,
-        last_trade_exit_time,
-        last_convo_timestamp,
+    const data = await response.json() as { analytics: any[] }
 
-        -- P&L Statistics
-        overall_pnl_with_fees,
-        overall_pnl_without_fees,
-        total_fees_paid,
-        total_fees_as_pct_of_pnl,
-        avg_net_pnl,
-        avg_gross_pnl,
-        std_net_pnl,
-        std_gross_pnl,
-        biggest_net_gain,
-        biggest_net_loss,
+    // Find the analytics for the requested model
+    const modelAnalytics = data.analytics?.find((item: any) => {
+      const itemModelId = item.model_id?.toLowerCase()
+      const searchModelId = modelId.toLowerCase()
 
-        -- Win Rate Analysis
-        win_rate,
-        avg_winners_net_pnl,
-        avg_losers_net_pnl,
-        std_winners_net_pnl,
-        std_losers_net_pnl,
+      // Direct match
+      if (itemModelId === searchModelId) return true
 
-        -- Trading Statistics
-        total_trades,
-        num_long_trades,
-        num_short_trades,
-        long_short_trades_ratio,
+      // Try common mappings
+      const mappings: Record<string, string[]> = {
+        'claude-1': ['claude-sonnet-4-5', 'claude-sonnet', 'claude'],
+        'deepseek-1': ['deepseek-chat-v3.1', 'deepseek-chat', 'deepseek'],
+        'gemini-1': ['gemini-2.5-pro', 'gemini-pro', 'gemini'],
+        'chatgpt-1': ['gpt-5', 'gpt-4', 'chatgpt'],
+        'grok-1': ['grok-4', 'grok'],
+        'qwen-1': ['qwen3-max', 'qwen'],
+      }
 
-        -- Holding Period
-        avg_holding_period_mins,
-        median_holding_period_mins,
-        std_holding_period_mins,
-        avg_longs_holding_period,
-        avg_shorts_holding_period,
+      for (const [dbId, apiIds] of Object.entries(mappings)) {
+        if (searchModelId === dbId && apiIds.some(id => id === itemModelId)) {
+          return true
+        }
+        if (apiIds.some(id => id === searchModelId) && itemModelId === dbId) {
+          return true
+        }
+      }
 
-        -- Trade Size
-        avg_size_of_trade_notional,
-        median_size_of_trade_notional,
-        std_size_of_trade_notional,
+      return false
+    })
 
-        -- Signal Statistics
-        total_signals,
-        num_long_signals,
-        num_short_signals,
-        num_close_signals,
-        num_hold_signals,
-        long_signal_pct,
-        short_signal_pct,
-        close_signal_pct,
-        hold_signal_pct,
-
-        -- Confidence
-        avg_confidence,
-        median_confidence,
-        std_confidence,
-        avg_confidence_long,
-        avg_confidence_short,
-        avg_confidence_close,
-
-        -- Leverage
-        avg_leverage,
-        median_leverage,
-        avg_convo_leverage,
-
-        -- Sharpe Ratio
-        sharpe_ratio,
-
-        -- Time Distribution
-        mins_long_combined,
-        mins_short_combined,
-        mins_flat_combined,
-        pct_mins_long_combined,
-        pct_mins_short_combined,
-        pct_mins_flat_combined,
-
-        -- Invocation Stats
-        num_invocations,
-        avg_invocation_break_mins,
-        min_invocation_break_mins,
-        max_invocation_break_mins,
-
-        cached_at
-      FROM model_analytics
-      WHERE model_id = ?
-      LIMIT 1
-    `).bind(modelId).first()
-
-    if (!analyticsQuery) {
+    if (!modelAnalytics) {
       return NextResponse.json(
         { error: `No analytics data found for model ${modelId}` },
         { status: 404 }
       )
     }
 
-    // Transform to readable format
+    // Extract data from the different breakdown tables
+    const feeData = modelAnalytics.fee_pnl_moves_breakdown_table || {}
+    const winnersLosers = modelAnalytics.winners_losers_breakdown_table || {}
+    const signals = modelAnalytics.signals_breakdown_table || {}
+    const longsShorts = modelAnalytics.longs_shorts_breakdown_table || {}
+    const overview = modelAnalytics.overall_trades_overview_table || {}
+
+    // Transform to our standard format
     const analytics = {
-      modelId: analyticsQuery.model_id,
-      updatedAt: new Date(Number(analyticsQuery.updated_at) * 1000).toISOString(),
-      lastTradeExitTime: analyticsQuery.last_trade_exit_time
-        ? new Date(Number(analyticsQuery.last_trade_exit_time) * 1000).toISOString()
+      modelId: modelId,
+      updatedAt: new Date(modelAnalytics.updated_at * 1000).toISOString(),
+      lastTradeExitTime: modelAnalytics.last_trade_exit_time
+        ? new Date(modelAnalytics.last_trade_exit_time * 1000).toISOString()
         : null,
-      lastConvoTimestamp: analyticsQuery.last_convo_timestamp
-        ? new Date(Number(analyticsQuery.last_convo_timestamp) * 1000).toISOString()
+      lastConvoTimestamp: modelAnalytics.last_convo_timestamp
+        ? new Date(modelAnalytics.last_convo_timestamp * 1000).toISOString()
         : null,
 
       // P&L Statistics
       pnl: {
-        overallWithFees: Number(analyticsQuery.overall_pnl_with_fees || 0),
-        overallWithoutFees: Number(analyticsQuery.overall_pnl_without_fees || 0),
-        totalFeesPaid: Number(analyticsQuery.total_fees_paid || 0),
-        feesAsPctOfPnl: Number(analyticsQuery.total_fees_as_pct_of_pnl || 0),
-        avgNet: Number(analyticsQuery.avg_net_pnl || 0),
-        avgGross: Number(analyticsQuery.avg_gross_pnl || 0),
-        stdNet: Number(analyticsQuery.std_net_pnl || 0),
-        stdGross: Number(analyticsQuery.std_gross_pnl || 0),
-        biggestGain: Number(analyticsQuery.biggest_net_gain || 0),
-        biggestLoss: Number(analyticsQuery.biggest_net_loss || 0),
+        overallWithFees: feeData.overall_pnl_with_fees || 0,
+        overallWithoutFees: feeData.overall_pnl_without_fees || 0,
+        totalFeesPaid: feeData.total_fees_paid || 0,
+        feesAsPctOfPnl: feeData.total_fees_as_pct_of_pnl || 0,
+        avgNet: feeData.avg_net_pnl || 0,
+        avgGross: feeData.avg_gross_pnl || 0,
+        stdNet: feeData.std_net_pnl || 0,
+        stdGross: feeData.std_gross_pnl || 0,
+        biggestGain: winnersLosers.biggest_net_gain || 0,
+        biggestLoss: winnersLosers.biggest_net_loss || 0,
       },
 
       // Win Rate Analysis
       winRate: {
-        overall: Number(analyticsQuery.win_rate || 0),
-        avgWinnersNetPnl: Number(analyticsQuery.avg_winners_net_pnl || 0),
-        avgLosersNetPnl: Number(analyticsQuery.avg_losers_net_pnl || 0),
-        stdWinnersNetPnl: Number(analyticsQuery.std_winners_net_pnl || 0),
-        stdLosersNetPnl: Number(analyticsQuery.std_losers_net_pnl || 0),
+        overall: winnersLosers.win_rate || 0,
+        avgWinnersNetPnl: winnersLosers.avg_winners_net_pnl || 0,
+        avgLosersNetPnl: winnersLosers.avg_losers_net_pnl || 0,
+        stdWinnersNetPnl: winnersLosers.std_winners_net_pnl || 0,
+        stdLosersNetPnl: winnersLosers.std_losers_net_pnl || 0,
       },
 
       // Trading Statistics
       trading: {
-        totalTrades: Number(analyticsQuery.total_trades || 0),
-        numLongTrades: Number(analyticsQuery.num_long_trades || 0),
-        numShortTrades: Number(analyticsQuery.num_short_trades || 0),
-        longShortRatio: Number(analyticsQuery.long_short_trades_ratio || 0),
+        totalTrades: overview.total_trades || 0,
+        numLongTrades: longsShorts.num_long_trades || 0,
+        numShortTrades: longsShorts.num_short_trades || 0,
+        longShortRatio: longsShorts.long_short_trades_ratio || 0,
       },
 
       // Holding Period
       holdingPeriod: {
-        avgMins: Number(analyticsQuery.avg_holding_period_mins || 0),
-        medianMins: Number(analyticsQuery.median_holding_period_mins || 0),
-        stdMins: Number(analyticsQuery.std_holding_period_mins || 0),
-        avgLongs: Number(analyticsQuery.avg_longs_holding_period || 0),
-        avgShorts: Number(analyticsQuery.avg_shorts_holding_period || 0),
+        avgMins: overview.avg_holding_period_mins || 0,
+        medianMins: overview.median_holding_period_mins || 0,
+        stdMins: overview.std_holding_period_mins || 0,
+        avgLongs: longsShorts.avg_longs_holding_period || 0,
+        avgShorts: longsShorts.avg_shorts_holding_period || 0,
       },
 
       // Trade Size
       tradeSize: {
-        avgNotional: Number(analyticsQuery.avg_size_of_trade_notional || 0),
-        medianNotional: Number(analyticsQuery.median_size_of_trade_notional || 0),
-        stdNotional: Number(analyticsQuery.std_size_of_trade_notional || 0),
+        avgNotional: overview.avg_size_of_trade_notional || 0,
+        medianNotional: overview.median_size_of_trade_notional || 0,
+        stdNotional: overview.std_size_of_trade_notional || 0,
       },
 
       // Signal Statistics
       signals: {
-        total: Number(analyticsQuery.total_signals || 0),
-        numLong: Number(analyticsQuery.num_long_signals || 0),
-        numShort: Number(analyticsQuery.num_short_signals || 0),
-        numClose: Number(analyticsQuery.num_close_signals || 0),
-        numHold: Number(analyticsQuery.num_hold_signals || 0),
-        longPct: Number(analyticsQuery.long_signal_pct || 0),
-        shortPct: Number(analyticsQuery.short_signal_pct || 0),
-        closePct: Number(analyticsQuery.close_signal_pct || 0),
-        holdPct: Number(analyticsQuery.hold_signal_pct || 0),
+        total: signals.total_signals || 0,
+        numLong: signals.num_long_signals || 0,
+        numShort: signals.num_short_signals || 0,
+        numClose: signals.num_close_signals || 0,
+        numHold: signals.num_hold_signals || 0,
+        longPct: signals.long_signal_pct || 0,
+        shortPct: signals.short_signal_pct || 0,
+        closePct: signals.close_signal_pct || 0,
+        holdPct: signals.hold_signal_pct || 0,
       },
 
       // Confidence
       confidence: {
-        avg: Number(analyticsQuery.avg_confidence || 0),
-        median: Number(analyticsQuery.median_confidence || 0),
-        std: Number(analyticsQuery.std_confidence || 0),
-        avgLong: Number(analyticsQuery.avg_confidence_long || 0),
-        avgShort: Number(analyticsQuery.avg_confidence_short || 0),
-        avgClose: Number(analyticsQuery.avg_confidence_close || 0),
+        avg: signals.avg_confidence || 0,
+        median: signals.median_confidence || 0,
+        std: signals.std_confidence || 0,
+        avgLong: signals.avg_confidence_long || 0,
+        avgShort: signals.avg_confidence_short || 0,
+        avgClose: signals.avg_confidence_close || 0,
       },
 
       // Leverage
       leverage: {
-        avg: Number(analyticsQuery.avg_leverage || 0),
-        median: Number(analyticsQuery.median_leverage || 0),
-        avgConvo: Number(analyticsQuery.avg_convo_leverage || 0),
+        avg: overview.avg_leverage || 0,
+        median: overview.median_leverage || 0,
+        avgConvo: overview.avg_convo_leverage || 0,
       },
 
       // Risk Metrics
       risk: {
-        sharpeRatio: Number(analyticsQuery.sharpe_ratio || 0),
+        sharpeRatio: modelAnalytics.sharpe_ratio || 0,
       },
 
       // Time Distribution
       timeDistribution: {
-        minsLongCombined: Number(analyticsQuery.mins_long_combined || 0),
-        minsShortCombined: Number(analyticsQuery.mins_short_combined || 0),
-        minsFlatCombined: Number(analyticsQuery.mins_flat_combined || 0),
-        pctMinsLong: Number(analyticsQuery.pct_mins_long_combined || 0),
-        pctMinsShort: Number(analyticsQuery.pct_mins_short_combined || 0),
-        pctMinsFlat: Number(analyticsQuery.pct_mins_flat_combined || 0),
+        minsLongCombined: longsShorts.mins_long_combined || 0,
+        minsShortCombined: longsShorts.mins_short_combined || 0,
+        minsFlatCombined: longsShorts.mins_flat_combined || 0,
+        pctMinsLong: longsShorts.pct_mins_long_combined || 0,
+        pctMinsShort: longsShorts.pct_mins_short_combined || 0,
+        pctMinsFlat: longsShorts.pct_mins_flat_combined || 0,
       },
 
       // Invocation Stats
       invocations: {
-        total: Number(analyticsQuery.num_invocations || 0),
-        avgBreakMins: Number(analyticsQuery.avg_invocation_break_mins || 0),
-        minBreakMins: Number(analyticsQuery.min_invocation_break_mins || 0),
-        maxBreakMins: Number(analyticsQuery.max_invocation_break_mins || 0),
+        total: modelAnalytics.num_invocations || 0,
+        avgBreakMins: modelAnalytics.avg_invocation_break_mins || 0,
+        minBreakMins: modelAnalytics.min_invocation_break_mins || 0,
+        maxBreakMins: modelAnalytics.max_invocation_break_mins || 0,
       },
 
-      cachedAt: new Date(Number(analyticsQuery.cached_at) * 1000).toISOString(),
+      // Raw data for debugging
+      rawData: modelAnalytics,
     }
 
     return NextResponse.json({
       data: analytics,
+      source: 'nof1-api-direct',
       timestamp: new Date().toISOString(),
     })
 
-  } catch (error) {
+  } catch (error: any) {
     console.error(`Error fetching analytics for model ${params.modelId}:`, error)
 
+    if (error.name === 'AbortError') {
+      return NextResponse.json(
+        { error: 'Request timeout - NOF1 API took too long to respond' },
+        { status: 504 }
+      )
+    }
+
     return NextResponse.json(
-      { error: 'Failed to fetch analytics data' },
+      { error: 'Failed to fetch analytics data from NOF1 API', details: error.message },
       { status: 500 }
     )
   }

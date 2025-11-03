@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { mockSnapshots } from '@/lib/mock/data'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
-export const revalidate = 0 // 不缓存，始终读取最新数据
+export const revalidate = 0
+
+const LEADERBOARD_API = 'https://nof1.ai/api/leaderboard'
+const API_TIMEOUT = 30000 // 30 seconds
 
 // AI Model metadata
 const AI_MODELS = {
@@ -48,49 +50,41 @@ const AI_MODELS = {
     avatar: '/avatars/gpt5.png',
     description: 'Advanced language model with superior reasoning capabilities',
     color: '#10B981'
+  },
+  'buynhold_btc': {
+    id: 'buynhold_btc',
+    name: 'Buy & Hold BTC',
+    avatar: '/avatars/btc.png',
+    description: 'Passive buy and hold Bitcoin strategy',
+    color: '#F7931A'
   }
 }
 
 export async function GET(request: NextRequest) {
   try {
-    // Get D1 database binding
-    const env = (request as any).env
-    const db = env?.DB
+    // Fetch leaderboard from NOF1 API
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT)
 
-    if (!db) {
-      console.warn('D1 database not available, using mock data')
-      // 降级到 mock 数据
-      return NextResponse.json({
-        data: mockSnapshots,
-        timestamp: new Date().toISOString(),
-        count: mockSnapshots.length,
-        source: 'mock-fallback'
-      }, { status: 200 })
+    const response = await fetch(LEADERBOARD_API, {
+      headers: {
+        'User-Agent': 'AlphaArena/1.0',
+        'Accept': 'application/json'
+      },
+      signal: controller.signal
+    })
+
+    clearTimeout(timeoutId)
+
+    if (!response.ok) {
+      throw new Error(`NOF1 API returned ${response.status}`)
     }
 
-    // Query leaderboard from D1
-    const leaderboardQuery = await db.prepare(`
-      SELECT
-        model_id,
-        num_trades,
-        sharpe,
-        win_dollars,
-        num_losses,
-        lose_dollars,
-        return_pct,
-        equity,
-        num_wins,
-        rank,
-        cached_at
-      FROM leaderboard_cache
-      WHERE model_id != ''
-      ORDER BY rank ASC
-    `).all()
-
-    const leaderboard = leaderboardQuery.results || []
+    const data = await response.json() as { leaderboard: any[] }
+    const leaderboard = data.leaderboard || []
 
     // Transform to frontend format
-    const enrichedSnapshots = leaderboard.map((entry: any) => {
+    const enrichedSnapshots = leaderboard.map((entry: any, index: number) => {
       const modelId = entry.model_id
       const modelInfo = AI_MODELS[modelId as keyof typeof AI_MODELS] || {
         id: modelId,
@@ -105,17 +99,19 @@ export async function GET(request: NextRequest) {
       const numWins = entry.num_wins || 0
       const winRate = totalTrades > 0 ? (numWins / totalTrades) * 100 : 0
 
+      const timestamp = new Date()
+
       return {
-        id: `snapshot-${modelId}-${entry.cached_at}`,
+        id: `snapshot-${modelId}-${timestamp.getTime()}`,
         aiModelId: modelId,
         currentPnL: Number(entry.return_pct || 0),
         totalAssets: Number(entry.equity || 0),
-        openPositions: 0, // Will be populated from positions data if needed
+        openPositions: 0, // Will be calculated from positions if needed
         totalTrades: totalTrades,
         winRate: winRate,
-        rank: entry.rank || 0,
-        rankChange: 0, // TODO: Calculate from leaderboard_history
-        timestamp: new Date(Number(entry.cached_at) * 1000),
+        rank: entry.rank || (index + 1),
+        rankChange: 0,
+        timestamp: timestamp,
         aiModel: {
           id: modelInfo.id,
           name: modelInfo.name,
@@ -123,7 +119,7 @@ export async function GET(request: NextRequest) {
           description: modelInfo.description,
           color: modelInfo.color,
           createdAt: new Date(),
-          updatedAt: new Date(Number(entry.cached_at) * 1000),
+          updatedAt: timestamp,
         }
       }
     })
@@ -132,17 +128,22 @@ export async function GET(request: NextRequest) {
       data: enrichedSnapshots,
       timestamp: new Date().toISOString(),
       count: enrichedSnapshots.length,
-      source: 'd1' // 标记数据源为D1
+      source: 'nof1-api-direct'
     })
 
-  } catch (error) {
-    console.error('D1 API error:', error)
-    // 降级到 mock 数据
-    return NextResponse.json({
-      data: mockSnapshots,
-      timestamp: new Date().toISOString(),
-      count: mockSnapshots.length,
-      source: 'mock-fallback'
-    }, { status: 200 })
+  } catch (error: any) {
+    console.error('NOF1 API error:', error)
+
+    if (error.name === 'AbortError') {
+      return NextResponse.json(
+        { error: 'Request timeout - NOF1 API took too long to respond' },
+        { status: 504 }
+      )
+    }
+
+    return NextResponse.json(
+      { error: 'Failed to fetch leaderboard from NOF1 API', details: error.message },
+      { status: 500 }
+    )
   }
 }
