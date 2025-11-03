@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
 
     // Transform to frontend format
     const enrichedSnapshots = leaderboard.map((entry: any, index: number) => {
-      const modelId = entry.model_id
+      const modelId = entry.id || entry.model_id
       const modelInfo = AI_MODELS[modelId as keyof typeof AI_MODELS] || {
         id: modelId,
         name: modelId,
